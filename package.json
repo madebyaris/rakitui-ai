@@ -1,0 +1,29 @@
+{
+  "name": "rakitui-ai",
+  "version": "0.0.1",
+  "description": "rakitui-ai MCP server",
+  "type": "module",
+  "bin": {
+    "rakitui-ai": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist/tools/* && tsc && mcp-build",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.4",
+    "mcp-framework": "^0.2.11",
+    "open": "^10.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  }
+}

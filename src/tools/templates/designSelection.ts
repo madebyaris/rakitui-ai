@@ -1,0 +1,259 @@
+export interface DesignInput {
+  design_name_1: string;
+  design_html_1: string;
+  design_name_2: string;
+  design_html_2: string;
+  design_name_3: string;
+  design_html_3: string;
+}
+
+export function generateDesignSelectionHTML(input: DesignInput): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>UI Component Selection</title>
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+          margin: 0; 
+          padding: 20px;
+          background-color: #f9f9f9;
+        }
+        h1 {
+          text-align: center;
+          margin-bottom: 10px;
+          color: #333;
+        }
+        .subtitle {
+          text-align: center;
+          margin-bottom: 30px;
+          color: #666;
+          font-size: 16px;
+        }
+        .designs-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 30px;
+          justify-content: center;
+        }
+        .design-container { 
+          flex: 1 1 300px;
+          max-width: 500px;
+          margin-bottom: 30px; 
+          padding: 20px; 
+          border: 1px solid #eaeaea; 
+          border-radius: 8px;
+          background-color: white;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .design-container:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .design-name { 
+          font-size: 20px; 
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #f0f0f0;
+          color: #222;
+        }
+        .design-content {
+          margin-bottom: 20px;
+          min-height: 100px;
+          padding: 15px;
+          border: 1px dashed #eaeaea;
+          border-radius: 4px;
+          background-color: #fafafa;
+        }
+        .component-wrapper {
+          margin: 0 auto;
+        }
+        .selection-feedback {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 20px;
+          background-color: #4CAF50;
+          color: white;
+          border-radius: 4px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+          display: none;
+          z-index: 100;
+        }
+        .selection-message {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 15px;
+          background-color: #333;
+          color: white;
+          text-align: center;
+          z-index: 100;
+        }
+        .instructions {
+          max-width: 700px;
+          margin: 0 auto 30px;
+          padding: 15px;
+          background-color: #e9f5ff;
+          border-radius: 8px;
+          color: #0c5a99;
+        }
+        .warning {
+          background-color: #fff3cd;
+          color: #856404;
+          border-radius: 8px;
+          padding: 10px 15px;
+          margin-top: 15px;
+          font-weight: 500;
+        }
+        .buttons-container {
+          text-align: center;
+          margin-top: 15px;
+        }
+        button { 
+          padding: 10px 20px; 
+          font-size: 16px; 
+          margin: 5px;
+          background-color: #0070f3;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        button:hover {
+          background-color: #0058c6;
+        }
+        button:active {
+          background-color: #004fc6;
+        }
+        button.selected {
+          background-color: #10B981;
+        }
+        .component-label {
+          display: inline-block;
+          padding: 3px 8px;
+          background-color: #f0f0f0;
+          border-radius: 4px;
+          font-size: 12px;
+          margin-bottom: 10px;
+          color: #666;
+        }
+        @media (max-width: 768px) {
+          .designs-container {
+            flex-direction: column;
+            align-items: center;
+          }
+          .design-container {
+            flex: 1 1 auto;
+            max-width: 100%;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>UI Component Selection</h1>
+      <p class="subtitle">Compare different design options for individual UI components</p>
+      
+      <div class="instructions">
+        <p><strong>Please select your preferred component design.</strong> The browser window will close automatically after your selection.</p>
+      </div>
+      
+      <div class="selection-feedback" id="selectionFeedback"></div>
+      
+      <div class="designs-container">
+        <div class="design-container">
+          <div class="design-name">${input.design_name_1}</div>
+          <div class="component-label">UI Component</div>
+          <div class="design-content">
+            <div class="component-wrapper">${input.design_html_1}</div>
+          </div>
+          <div class="buttons-container">
+            <button id="btn1" onclick="selectDesign('${input.design_name_1}', 'btn1')">Select This Component</button>
+          </div>
+        </div>
+
+        <div class="design-container">
+          <div class="design-name">${input.design_name_2}</div>
+          <div class="component-label">UI Component</div>
+          <div class="design-content">
+            <div class="component-wrapper">${input.design_html_2}</div>
+          </div>
+          <div class="buttons-container">
+            <button id="btn2" onclick="selectDesign('${input.design_name_2}', 'btn2')">Select This Component</button>
+          </div>
+        </div>
+
+        <div class="design-container">
+          <div class="design-name">${input.design_name_3}</div>
+          <div class="component-label">UI Component</div>
+          <div class="design-content">
+            <div class="component-wrapper">${input.design_html_3}</div>
+          </div>
+          <div class="buttons-container">
+            <button id="btn3" onclick="selectDesign('${input.design_name_3}', 'btn3')">Select This Component</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="selection-message">
+        Please select a component design by clicking one of the buttons above.
+      </div>
+
+      <script>
+        // Function to check if selection has been finalized
+        function checkFinalizationStatus() {
+          fetch('/design-selection-finalized')
+            .then(response => response.json())
+            .then(data => {
+              if (data.finalized) {
+                window.close();
+              }
+            })
+            .catch(() => {
+              // If any error occurs, try to close anyway
+              window.close();
+            });
+        }
+        
+        function selectDesign(name, btnId) {
+          // Update button state
+          document.querySelectorAll('button').forEach(btn => {
+            btn.disabled = true;
+          });
+          
+          document.getElementById(btnId).innerText = "Selected ✓";
+          
+          // Send selection to the server immediately
+          fetch('/design-selection-result', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ selectedDesign: name })
+          })
+          .then(() => {
+            // Try to close window immediately
+            window.close();
+            
+            // As a fallback, check for finalization signal
+            setInterval(checkFinalizationStatus, 100);
+          })
+          .catch(() => {
+            // If error, still try to close
+            window.close();
+          });
+        }
+        
+        // Try to prevent confirmation dialogs when closing
+        window.onbeforeunload = null;
+      </script>
+    </body>
+    </html>
+  `;
+} 
