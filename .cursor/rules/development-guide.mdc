@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Guide
+
+This guide covers the development workflow for the Rakit UI AI project.
+
+## Project Setup
+
+- [package.json](mdc:package.json) defines the project dependencies and scripts
+- TypeScript configuration is in [tsconfig.json](mdc:tsconfig.json)
+- The project uses ES modules (type: "module" in package.json)
+
+## Build & Run
+
+- `npm run build`: Cleans dist directory, compiles TypeScript, and builds MCP
+- `npm run watch`: Watches for changes during development
+- `npm start`: Starts the MCP server from the compiled dist directory
+
+## Key Dependencies
+
+- `@modelcontextprotocol/sdk`: Core MCP SDK
+- `mcp-framework`: Framework for building MCP tools
+- `open`: Library for opening URLs in the default browser
+
+## Development Workflow
+
+1. Create/modify tool implementations in `src/tools/`
+2. Update templates as needed in `src/tools/templates/`
+3. Run `npm run watch` for development
+4. Test using `npm start`
+5. Build for distribution with `npm run build`
+
+## Note on Browser Integration
+
+The server creates temporary files in a `tmp` directory at the project root. Make sure this directory has appropriate permissions for file creation.

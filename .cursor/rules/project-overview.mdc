@@ -1,0 +1,22 @@
+---
+description: High-level overview of the Rakit UI AI project structure and components
+globs: ["src/**/*.ts", "*.json"]
+alwaysApply: true
+---
+# Project Overview: Rakit UI AI
+
+This project is an MCP (Model Context Protocol) server implementation that provides a UI component design selection tool. It allows comparison between different UI component designs in a browser interface.
+
+## Main Components
+
+- [src/index.ts](mdc:src/index.ts): Main entry point that initializes and starts the MCP server
+- [src/tools/DesignselectionTool.ts](mdc:src/tools/DesignselectionTool.ts): The primary tool implementation for design selection
+- [src/tools/templates/designSelection.ts](mdc:src/tools/templates/designSelection.ts): HTML template generator for the UI design selection interface
+- [src/tools/utils/serverUtils.ts](mdc:src/tools/utils/serverUtils.ts): Utilities for running a local server to display design options
+
+## Project Structure
+
+The project follows a modular structure with clear separation of concerns:
+- Tool implementation logic (DesignselectionTool.ts)
+- UI templates (templates/designSelection.ts)
+- Server utilities (utils/serverUtils.ts)

@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Server Implementation Details
+
+The design selection tool uses a local HTTP server to display design options and handle user selection. This is implemented in [src/tools/utils/serverUtils.ts](mdc:src/tools/utils/serverUtils.ts).
+
+## Server Features
+
+- Creates a temporary directory for HTML files if needed
+- Finds an available port starting from 3000
+- Serves the design selection HTML page at `/design-selection`
+- Accepts design selection via POST to `/design-selection-result`
+- Provides selection status via `/design-selection-finalized`
+- Implements CORS for browser compatibility
+- Handles graceful server shutdown
+
+## Important Implementation Notes
+
+- The server maintains state using variables like `selectedDesign` and `selectionComplete`
+- Port finding logic increments until an available port is found
+- Server has a 15-minute timeout for user selection
+- The browser polls the server to know when to close itself
+- Temporary files are created with timestamped names for uniqueness

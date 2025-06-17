@@ -1,0 +1,55 @@
+2025-05-17T17:58:44.287Z [INFO] Server running at http://localhost:3000/design-selection
+2025-05-17T17:58:44.296Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:44.797Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:45.299Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:45.801Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:46.303Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:46.805Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:47.307Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:47.809Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:48.312Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:48.814Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:49.316Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:49.819Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:50.321Z [INFO] getSelectedDesign called, current value: null
+2025-05-17T17:58:50.417Z [INFO] Received POST request to /design-selection-result
+2025-05-17T17:58:50.418Z [INFO] Received data chunk: {"selectedDesign":"Grid Layout"}
+2025-05-17T17:58:50.419Z [INFO] Request body complete: {"selectedDesign":"Grid Layout"}
+2025-05-17T17:58:50.419Z [INFO] Successfully parsed JSON. Design selected: Grid Layout
+2025-05-17T17:58:50.420Z [INFO] Response sent with status 200
+2025-05-17T17:58:50.823Z [INFO] getSelectedDesign called, current value: Grid Layout
+2025-05-17T17:58:50.824Z [INFO] notifySelectionFinalized called
+2025-05-17T17:58:55.826Z [INFO] Forcing server shutdown
+2025-05-17T18:01:34.626Z [INFO] Local server stopped gracefully
+2025-05-23T02:29:35.784Z [INFO] Server running at http://localhost:3000/design-selection
+2025-05-23T02:29:35.795Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:36.297Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:36.798Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:37.299Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:37.801Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:38.302Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:38.804Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:39.305Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:39.807Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:40.310Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:40.812Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:41.313Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:41.815Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:42.317Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:42.819Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:43.320Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:43.822Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:44.324Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:44.826Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:45.327Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:45.829Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:46.331Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:46.832Z [INFO] getSelectedDesign called, current value: null
+2025-05-23T02:29:47.039Z [INFO] Received POST request to /design-selection-result
+2025-05-23T02:29:47.040Z [INFO] Received data chunk: {"selectedDesign":"Corporate Grid Layout"}
+2025-05-23T02:29:47.041Z [INFO] Request body complete: {"selectedDesign":"Corporate Grid Layout"}
+2025-05-23T02:29:47.041Z [INFO] Successfully parsed JSON. Design selected: Corporate Grid Layout
+2025-05-23T02:29:47.042Z [INFO] Response sent with status 200
+2025-05-23T02:29:47.334Z [INFO] getSelectedDesign called, current value: Corporate Grid Layout
+2025-05-23T02:29:47.334Z [INFO] notifySelectionFinalized called
+2025-05-23T02:29:49.336Z [INFO] Local server stopped gracefully

@@ -1,0 +1,31 @@
+---
+description: Explains the workflow and process of the design selection tool
+globs: ["src/tools/DesignselectionTool.ts", "src/tools/templates/designSelection.ts", "src/tools/utils/serverUtils.ts"]
+alwaysApply: false
+---
+# Design Selection Flow
+
+The design selection tool operates with the following workflow:
+
+1. Tool is initialized in [src/index.ts](mdc:src/index.ts)
+2. When executed, the tool:
+   - Generates HTML from templates in [src/tools/templates/designSelection.ts](mdc:src/tools/templates/designSelection.ts)
+   - Starts a local HTTP server using [src/tools/utils/serverUtils.ts](mdc:src/tools/utils/serverUtils.ts)
+   - Opens a browser window for user interaction
+   - Waits for user selection via polling mechanism
+   - Returns the selected design and shuts down the server
+
+## Key Functions
+
+- `serveHtmlOnLocalhost()`: Creates temporary HTML file and serves it
+- `generateDesignSelectionHTML()`: Creates the UI for comparing designs
+- `getSelectedDesign()`: Retrieves the user's selection
+- `stopLocalServer()`: Gracefully shuts down the local server
+
+## Data Flow
+
+1. Design HTML content is passed to the tool
+2. Server renders options in the browser
+3. User selects a design, which is sent back via HTTP POST
+4. Selection is stored in server-side state
+5. Tool returns the selected design info as its response

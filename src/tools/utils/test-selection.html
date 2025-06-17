@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selection Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    button { padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; min-height: 100px; }
+  </style>
+</head>
+<body>
+  <h1>Design Selection Test</h1>
+  <p>This will test the communication with the MCP server</p>
+  
+  <button onclick="sendSelection('Design Option A')">Select Design A</button>
+  <button onclick="sendSelection('Design Option B')">Select Design B</button>
+  <button onclick="sendSelection('Design Option C')">Select Design C</button>
+  
+  <div id="result"></div>
+  
+  <script>
+    function appendResult(message) {
+      const resultDiv = document.getElementById('result');
+      const p = document.createElement('p');
+      p.textContent = message;
+      resultDiv.appendChild(p);
+    }
+    
+    function sendSelection(name) {
+      appendResult(`Sending selection: ${name}`);
+      
+      fetch('/design-selection-result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ selectedDesign: name })
+      })
+      .then(response => {
+        appendResult(`Response status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        appendResult(`Response data: ${JSON.stringify(data)}`);
+      })
+      .catch(error => {
+        appendResult(`Error: ${error.message}`);
+      });
+    }
+  </script>
+</body>
+</html> 

@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# MCP Tool Structure
+
+The project implements an MCP (Model Context Protocol) tool following the framework's required structure.
+
+## Key Components
+
+- [src/tools/DesignselectionTool.ts](mdc:src/tools/DesignselectionTool.ts): Main tool implementation
+- Tool class extends `MCPTool<DesignInput>` from MCP framework
+- Input schema defined using Zod for validation
+
+## Tool Implementation Details
+
+- Each tool has a unique `name` property ("designselection")
+- The `description` explains the tool's purpose
+- The `schema` defines expected input parameters:
+  - design_name_1, design_name_2, design_name_3
+  - design_html_1, design_html_2, design_html_3
+- The `execute()` method processes the input and returns a response
+
+## MCP Server Setup
+
+- [src/index.ts](mdc:src/index.ts) creates and initializes the MCP server
+- Tools are exported for the framework to discover
+- Server is started with appropriate error handling

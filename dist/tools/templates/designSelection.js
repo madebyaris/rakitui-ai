@@ -213,6 +213,8 @@ export function generateDesignSelectionHTML(input) {
         }
         
         function selectDesign(name, btnId) {
+          console.log('Selection function called with: ' + name);
+          
           // Update button state
           document.querySelectorAll('button').forEach(btn => {
             btn.disabled = true;
@@ -220,7 +222,18 @@ export function generateDesignSelectionHTML(input) {
           
           document.getElementById(btnId).innerText = "Selected ✓";
           
-          // Send selection to the server immediately
+          // Create and show a success message
+          const feedback = document.createElement('div');
+          feedback.className = 'selection-feedback';
+          feedback.style.display = 'block';
+          feedback.style.backgroundColor = '#4CAF50';
+          feedback.innerHTML = 'Selection received: <strong>' + name + '</strong>. This window will close shortly...';
+          document.body.appendChild(feedback);
+          
+          // Add debug message
+          console.log('Sending selection to server: ' + name);
+          
+          // Send selection to the server
           fetch('/design-selection-result', {
             method: 'POST',
             headers: {
@@ -228,16 +241,40 @@ export function generateDesignSelectionHTML(input) {
             },
             body: JSON.stringify({ selectedDesign: name })
           })
-          .then(() => {
-            // Try to close window immediately
-            window.close();
-            
-            // As a fallback, check for finalization signal
-            setInterval(checkFinalizationStatus, 100);
+          .then(response => {
+            console.log('Server response status: ' + response.status);
+            return response.json();
           })
-          .catch(() => {
-            // If error, still try to close
-            window.close();
+          .then(data => {
+            console.log('Server response data: ', data);
+            
+            // Add a delay before trying to close the window
+            setTimeout(function() {
+              console.log('Attempting to close window');
+              // Try to close window after a short delay
+              window.close();
+              
+              // As a fallback, check for finalization signal
+              setInterval(checkFinalizationStatus, 500);
+            }, 1500);
+          })
+          .catch(function(error) {
+            // Show error message
+            console.error('Error submitting selection:', error);
+            const errorFeedback = document.createElement('div');
+            errorFeedback.className = 'selection-feedback';
+            errorFeedback.style.display = 'block';
+            errorFeedback.style.backgroundColor = '#f44336';
+            errorFeedback.innerText = 'Error submitting selection. Please try again.';
+            document.body.appendChild(errorFeedback);
+            
+            // Re-enable buttons after error
+            setTimeout(function() {
+              document.querySelectorAll('button').forEach(function(btn) {
+                btn.disabled = false;
+              });
+              errorFeedback.style.display = 'none';
+            }, 3000);
           });
         }
         

@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# UI Template Structure
+
+The UI for design selection is generated using a template system defined in [src/tools/templates/designSelection.ts](mdc:src/tools/templates/designSelection.ts).
+
+## Template Features
+
+- Responsive design for various screen sizes
+- CSS styling with hover effects and visual feedback
+- Clear component labeling and selection buttons
+- Selection confirmation feedback
+
+## Template Structure
+
+- The template takes a `DesignInput` interface with:
+  - Three design names (design_name_1, design_name_2, design_name_3)
+  - Three HTML content strings (design_html_1, design_html_2, design_html_3)
+- Generated HTML includes:
+  - Header and instructions
+  - Three design containers with names and content
+  - Selection buttons for each design
+  - JavaScript for handling selection and communicating with server
+
+## Client-Side Functionality
+
+- Selection handling via `selectDesign()` function
+- Server communication via fetch API
+- Automatic window closing when selection is finalized
+- Visual feedback for selection process
