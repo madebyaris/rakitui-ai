@@ -1,6 +1,5 @@
 import { MCPTool } from "mcp-framework";
 import { z } from "zod";
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -11,6 +10,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // Create a temporary directory path for logs
 const tmpDir = path.join(__dirname, '../../../tmp');
+/**
+ * Tool for selecting between different UI component designs
+ * Shows three design options in a browser window and returns the selected design
+ */
 export class DesignselectionTool extends MCPTool {
     name = "designselection";
     description = "Tool for selecting between different UI component designs. Can be run multiple times to compare different components. Returns individual component sections rather than full page designs.";
@@ -40,65 +43,74 @@ export class DesignselectionTool extends MCPTool {
             description: "HTML content of the third design (individual UI component)",
         },
     };
+    /**
+     * Validates input to ensure it's safe
+     */
+    validateDesignInput(input) {
+        // Check for potentially malicious content
+        const designs = [
+            { name: input.design_name_1, html: input.design_html_1 },
+            { name: input.design_name_2, html: input.design_html_2 },
+            { name: input.design_name_3, html: input.design_html_3 }
+        ];
+        for (const design of designs) {
+            // Validate design names
+            if (design.name.length > 100) {
+                throw new Error('Design name too long (max 100 characters)');
+            }
+            // Basic XSS prevention - check for script tags
+            if (design.html.toLowerCase().includes('<script') ||
+                design.html.toLowerCase().includes('javascript:') ||
+                design.html.toLowerCase().includes('onerror=')) {
+                throw new Error('Design HTML contains potentially unsafe content');
+            }
+        }
+    }
+    /**
+     * Main execution method
+     */
     async execute(input) {
+        const startTime = Date.now();
         try {
+            // Validate input
+            this.validateDesignInput(input);
             // Generate HTML content
             const htmlContent = generateDesignSelectionHTML(input);
             // Serve the HTML content on a local server and open in browser
             const url = await serveHtmlOnLocalhost('design-selection', htmlContent);
-            // Wait for user to make a selection (polling approach)
+            // Wait for user to make a selection
             let selectedDesign = null;
-            const startTime = Date.now();
             const timeoutMs = 15 * 60 * 1000; // 15 minutes total timeout
-            // Poll for selection at shorter intervals for faster response
-            const pollIntervalMs = 500; // Check every 500ms
             // Debug for MCP
-            process.stderr.write(`[DEBUG] Starting selection polling loop\n`);
-            try {
-                // Write a marker to our log file
-                fs.appendFileSync(path.join(tmpDir, 'debug.log'), `${new Date().toISOString()} [TOOL] Starting selection polling\n`);
-            }
-            catch (err) {
-                // Silently fail if we can't write to the debug file
-            }
+            process.stderr.write(`[DEBUG] Starting selection process\n`);
             // Keep checking until timeout is reached
             let checkCount = 0;
             while ((Date.now() - startTime) < timeoutMs) {
                 checkCount++;
                 if (checkCount % 20 === 0) {
-                    // Every 10 seconds (20 * 500ms), log the current status
+                    // Every 10 seconds, log the current status
                     process.stderr.write(`[DEBUG] Still waiting for selection, ${Math.floor((Date.now() - startTime) / 1000)}s elapsed\n`);
                 }
                 // Check if a design has been selected
                 selectedDesign = getSelectedDesign();
                 if (selectedDesign) {
                     process.stderr.write(`[DEBUG] Design selected: ${selectedDesign}\n`);
-                    // Read the debug file to see if the selection was logged
-                    try {
-                        if (fs.existsSync(path.join(tmpDir, 'selection.log'))) {
-                            process.stderr.write(`[DEBUG] Selection log file exists\n`);
-                        }
-                        else {
-                            process.stderr.write(`[DEBUG] Selection log file does not exist\n`);
-                        }
-                    }
-                    catch (err) {
-                        // Silently fail
-                    }
-                    // Immediately notify the browser to close itself
+                    // Notify the browser to close
                     notifySelectionFinalized();
-                    // Don't stop the server immediately - we'll do that after returning the result
+                    // Give a moment for the browser to close gracefully
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     break;
                 }
                 // Wait before checking again
-                await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
-            // If no selection was made, return a message
+            // If no selection was made, return appropriate response
             if (!selectedDesign) {
-                // Add a small delay before stopping the server
+                // Clean up
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 stopLocalServer();
                 return {
+                    success: false,
                     message: "No design was selected within the timeout period. Please try again.",
                     url: url,
                     design_options: [
@@ -106,11 +118,26 @@ export class DesignselectionTool extends MCPTool {
                         { name: input.design_name_2, description: "Option 2" },
                         { name: input.design_name_3, description: "Option 3" }
                     ],
-                    selectedDesign: null
+                    selectedDesign: null,
+                    selectedDesignHtml: null,
+                    selectionTimestamp: null,
+                    selectionDuration: Date.now() - startTime
                 };
             }
-            // Prepare the response
+            // Find the selected design HTML
+            let selectedDesignHtml = '';
+            if (selectedDesign === input.design_name_1) {
+                selectedDesignHtml = input.design_html_1;
+            }
+            else if (selectedDesign === input.design_name_2) {
+                selectedDesignHtml = input.design_html_2;
+            }
+            else if (selectedDesign === input.design_name_3) {
+                selectedDesignHtml = input.design_html_3;
+            }
+            // Prepare the successful response
             const response = {
+                success: true,
                 message: `You selected: ${selectedDesign}`,
                 url: url,
                 design_options: [
@@ -118,20 +145,22 @@ export class DesignselectionTool extends MCPTool {
                     { name: input.design_name_2, description: "Option 2" },
                     { name: input.design_name_3, description: "Option 3" }
                 ],
-                selectedDesign: selectedDesign
+                selectedDesign: selectedDesign,
+                selectedDesignHtml: selectedDesignHtml,
+                selectionTimestamp: new Date().toISOString(),
+                selectionDuration: Date.now() - startTime
             };
-            // Add a small delay before stopping the server to ensure the response is sent
-            // Using a different approach to stop the server that won't interfere with the JSON
+            // Schedule server cleanup
             setTimeout(() => {
                 try {
                     stopLocalServer();
                 }
                 catch (shutdownError) {
-                    // Silent error handling for shutdown to avoid interfering with response
+                    // Silent error handling for shutdown
                     process.stderr.write(`[ERROR] Server shutdown error: ${shutdownError}\n`);
                 }
             }, 2000);
-            // Return with the selection
+            // Return the enhanced response
             return response;
         }
         catch (error) {
@@ -142,11 +171,21 @@ export class DesignselectionTool extends MCPTool {
             catch (cleanupError) {
                 // Silent error handling
             }
-            // Return an error response that won't break the MCP protocol
+            // Return an error response
             return {
+                success: false,
                 error: true,
                 message: `Error in design selection: ${error instanceof Error ? error.message : String(error)}`,
-                selectedDesign: null
+                url: null,
+                design_options: [
+                    { name: input.design_name_1, description: "Option 1" },
+                    { name: input.design_name_2, description: "Option 2" },
+                    { name: input.design_name_3, description: "Option 3" }
+                ],
+                selectedDesign: null,
+                selectedDesignHtml: null,
+                selectionTimestamp: null,
+                selectionDuration: Date.now() - startTime
             };
         }
     }

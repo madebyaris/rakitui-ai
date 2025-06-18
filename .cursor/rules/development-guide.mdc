@@ -12,6 +12,7 @@ This guide covers the development workflow for the Rakit UI AI project.
 - [package.json](mdc:package.json) defines the project dependencies and scripts
 - TypeScript configuration is in [tsconfig.json](mdc:tsconfig.json)
 - The project uses ES modules (type: "module" in package.json)
+- Check [TODO.md](mdc:TODO.md) for planned improvements and features
 
 ## Build & Run
 
@@ -32,6 +33,29 @@ This guide covers the development workflow for the Rakit UI AI project.
 3. Run `npm run watch` for development
 4. Test using `npm start`
 5. Build for distribution with `npm run build`
+
+## Working on Improvements
+
+1. Check [TODO.md](mdc:TODO.md) for prioritized tasks
+2. Create feature branches for each improvement
+3. Follow the security guidelines in security-best-practices rule
+4. Add tests according to testing-strategy rule
+5. Optimize performance following performance-optimization rule
+
+## Testing
+
+- Unit tests: `npm test` (once implemented)
+- Integration tests: `npm run test:integration`
+- E2E tests: `npm run test:e2e`
+- Coverage report: `npm run test:coverage`
+
+## Contributing
+
+1. Pick a task from TODO.md
+2. Create a feature branch
+3. Implement with tests
+4. Update documentation
+5. Submit pull request
 
 ## Note on Browser Integration
 

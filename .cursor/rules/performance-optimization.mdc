@@ -1,0 +1,70 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Performance Optimization
+
+Guidelines for optimizing the performance of the design selection tool.
+
+## Current Performance Bottlenecks
+
+1. **Server Startup Time**: Creating new HTTP server for each session
+2. **Polling Overhead**: 500ms polling creates unnecessary load
+3. **HTML Generation**: Template string concatenation can be slow
+4. **File I/O**: Writing temporary files for each session
+
+## Optimization Strategies
+
+### Server Optimization
+
+- Implement server pooling to reuse servers
+- Use worker threads for parallel processing
+- Cache static resources
+- Implement connection pooling
+
+### Template Optimization
+
+In [src/tools/templates/designSelection.ts](mdc:src/tools/templates/designSelection.ts):
+- Use template engines for better performance
+- Implement HTML streaming
+- Lazy load design previews
+- Compress HTML output
+
+### Resource Management
+
+In [src/tools/utils/serverUtils.ts](mdc:src/tools/utils/serverUtils.ts):
+- Implement proper cleanup timers
+- Use memory-efficient data structures
+- Limit concurrent sessions
+- Add resource monitoring
+
+### Client-Side Optimization
+
+- Implement virtual scrolling for many designs
+- Use intersection observer for lazy loading
+- Optimize CSS animations
+- Minimize JavaScript bundle size
+
+## Performance Metrics
+
+Track these metrics:
+- Server startup time
+- Time to first design display
+- Selection response time
+- Memory usage per session
+- Concurrent session capacity
+
+## Caching Strategy
+
+- Cache generated HTML templates
+- Cache design previews
+- Implement ETag support
+- Use browser caching effectively
+
+## Monitoring
+
+- Add performance logging
+- Implement APM integration
+- Set up performance alerts
+- Regular performance audits

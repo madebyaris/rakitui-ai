@@ -1,0 +1,45 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# WebSocket Implementation Guide
+
+This guide provides instructions for replacing the current polling mechanism with WebSocket communication.
+
+## Current Polling Implementation
+
+The current implementation in [src/tools/utils/serverUtils.ts](mdc:src/tools/utils/serverUtils.ts) uses HTTP polling:
+- Client polls `/design-selection-finalized` endpoint
+- Server maintains state with global variables
+- 500ms polling interval
+
+## WebSocket Implementation Plan
+
+### Server-Side Changes
+
+1. Add WebSocket support to the HTTP server
+2. Maintain WebSocket connections for each session
+3. Send real-time updates when selection is made
+4. Clean up connections on disconnect
+
+### Client-Side Changes
+
+1. Replace fetch polling with WebSocket connection
+2. Handle connection states (connecting, connected, disconnected)
+3. Implement automatic reconnection logic
+4. Update UI based on WebSocket events
+
+### Benefits
+
+- Instant response when selection is made
+- Reduced server load (no polling)
+- Better scalability
+- Cleaner bidirectional communication
+
+### Implementation Notes
+
+- Use the `ws` package for WebSocket support
+- Implement heartbeat/ping-pong for connection health
+- Add graceful degradation to polling if WebSocket fails
+- Consider using Socket.IO for additional features

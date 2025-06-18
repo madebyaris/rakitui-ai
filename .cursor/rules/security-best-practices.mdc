@@ -1,0 +1,57 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Security Best Practices
+
+This rule outlines security considerations for the Rakit UI AI project.
+
+## Input Validation
+
+All user inputs must be validated before processing:
+- Design names should be sanitized to prevent XSS
+- HTML content should be validated and sanitized
+- File paths should be validated to prevent directory traversal
+
+## CSRF Protection
+
+For the design selection endpoint in [src/tools/utils/serverUtils.ts](mdc:src/tools/utils/serverUtils.ts):
+- Implement CSRF tokens for POST requests
+- Validate origin headers
+- Use SameSite cookie attributes
+
+## HTML Sanitization
+
+When handling design HTML in [src/tools/templates/designSelection.ts](mdc:src/tools/templates/designSelection.ts):
+- Use a library like DOMPurify for sanitization
+- Whitelist allowed HTML tags and attributes
+- Remove potentially dangerous elements (script, iframe, etc.)
+
+## Rate Limiting
+
+Implement rate limiting to prevent abuse:
+- Limit requests per IP address
+- Limit concurrent sessions
+- Add exponential backoff for repeated requests
+
+## Authentication & Authorization
+
+For future enhancements:
+- Consider adding optional authentication
+- Implement session management
+- Add role-based access control for private designs
+
+## Security Headers
+
+Add security headers to all HTTP responses:
+- Content-Security-Policy
+- X-Frame-Options
+- X-Content-Type-Options
+- Strict-Transport-Security
+
+## Logging & Monitoring
+
+- Log security-relevant events
+- Monitor for suspicious patterns
+- Implement alerting for security incidents

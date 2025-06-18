@@ -1,0 +1,98 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# API Enhancement Guide
+
+Guidelines for enhancing the MCP tool API and adding new features.
+
+## Enhanced Response Format
+
+The tool in [src/tools/DesignselectionTool.ts](mdc:src/tools/DesignselectionTool.ts) should return richer data:
+
+```typescript
+interface EnhancedResponse {
+  // Current fields
+  message: string;
+  url: string;
+  design_options: Array<{name: string, description: string}>;
+  selectedDesign: string | null;
+  
+  // New fields
+  selectedDesignHtml: string;
+  selectionTimestamp: string;
+  selectionDuration: number;
+  sessionId: string;
+  analytics: {
+    timeToFirstInteraction: number;
+    hoverCounts: Record<string, number>;
+    viewOrder: string[];
+  };
+}
+```
+
+## Configuration Schema Enhancement
+
+Add new optional parameters to the tool schema:
+
+```typescript
+schema = {
+  // Existing parameters...
+  
+  // New configuration options
+  timeout_minutes: {
+    type: z.number().optional().default(15),
+    description: "Timeout duration in minutes"
+  },
+  auto_close: {
+    type: z.boolean().optional().default(true),
+    description: "Auto-close browser after selection"
+  },
+  show_code: {
+    type: z.boolean().optional().default(false),
+    description: "Show HTML code alongside preview"
+  },
+  allow_multiple: {
+    type: z.boolean().optional().default(false),
+    description: "Allow multiple design selections"
+  },
+  theme: {
+    type: z.enum(['light', 'dark', 'auto']).optional().default('light'),
+    description: "UI theme for selection interface"
+  },
+  export_format: {
+    type: z.enum(['html', 'react', 'vue', 'angular']).optional(),
+    description: "Export selected design in specific format"
+  }
+}
+```
+
+## Callback/Webhook Support
+
+Add event callbacks for integrations:
+
+```typescript
+callbacks?: {
+  onSelectionStart?: (sessionId: string) => void;
+  onDesignHover?: (designName: string) => void;
+  onSelectionComplete?: (selection: EnhancedResponse) => void;
+  onTimeout?: (sessionId: string) => void;
+  onError?: (error: Error) => void;
+}
+```
+
+## Export Functionality
+
+Implement export methods:
+- `exportAsHTML(designName: string): string`
+- `exportAsReactComponent(designName: string): string`
+- `exportAsVueComponent(designName: string): string`
+- `generateShareableLink(sessionId: string): string`
+
+## API Versioning
+
+- Maintain backward compatibility
+- Use version headers
+- Deprecate old features gracefully
+- Document breaking changes

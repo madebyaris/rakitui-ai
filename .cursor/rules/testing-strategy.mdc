@@ -1,0 +1,80 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testing Strategy
+
+Comprehensive testing approach for the Rakit UI AI design selection tool.
+
+## Test Structure
+
+```
+tests/
+├── unit/
+│   ├── DesignselectionTool.test.ts
+│   ├── serverUtils.test.ts
+│   └── designSelection.test.ts
+├── integration/
+│   └── selection-flow.test.ts
+└── e2e/
+    └── browser-selection.test.ts
+```
+
+## Unit Testing
+
+Test individual functions in isolation:
+
+### DesignselectionTool Tests
+- Test schema validation
+- Test execute method with various inputs
+- Test error handling
+- Mock dependencies (serverUtils)
+
+### ServerUtils Tests
+- Test server creation and port handling
+- Test state management functions
+- Test cleanup mechanisms
+- Mock HTTP server and file system
+
+### Template Tests
+- Test HTML generation with different inputs
+- Test XSS prevention
+- Test template escaping
+
+## Integration Testing
+
+Test component interactions:
+- Server startup and shutdown flow
+- Selection process end-to-end
+- Error recovery mechanisms
+- Timeout handling
+
+## E2E Testing
+
+Test full user flows using Playwright:
+- Browser opens correctly
+- Design options display properly
+- Selection process works
+- Browser closes after selection
+- Multiple simultaneous sessions
+
+## Testing Tools
+
+- **Jest**: Unit and integration tests
+- **Playwright**: E2E browser tests
+- **Supertest**: HTTP endpoint testing
+- **Mock Service Worker**: API mocking
+
+## Coverage Goals
+
+- Unit tests: 80% coverage minimum
+- Integration tests: Critical paths covered
+- E2E tests: Happy path + key error scenarios
+
+## CI/CD Integration
+
+- Run tests on every pull request
+- Block merging if tests fail
+- Generate coverage reports
+- Performance benchmarking

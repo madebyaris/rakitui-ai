@@ -12,12 +12,15 @@
   "scripts": {
     "build": "rm -rf dist/tools/* && tsc && mcp-build",
     "watch": "tsc --watch",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "node test-improved.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
+    "@types/ws": "^8.18.1",
     "mcp-framework": "^0.2.11",
-    "open": "^10.1.2"
+    "open": "^10.1.2",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",

@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import open from 'open';
+import { WebSocketServer, WebSocket } from 'ws';
 
 // For handling ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -13,6 +14,8 @@ const __dirname = dirname(__filename);
 let selectedDesign: string | null = null;
 let selectionComplete = false;
 let server: http.Server | null = null;
+let wss: WebSocketServer | null = null;
+let activeWebSocket: WebSocket | null = null;
 let port = 3000;
 
 // Create a temporary directory for HTML files if it doesn't exist
@@ -48,9 +51,9 @@ const logger = {
 
 /**
  * Serves HTML content on localhost and opens in a browser
- * @param {string} filename - Base filename for the HTML file
- * @param {string} htmlContent - The HTML content to serve
- * @returns {Promise<string>} URL of the served content
+ * @param filename - Base filename for the HTML file
+ * @param htmlContent - The HTML content to serve
+ * @returns URL of the served content
  */
 export async function serveHtmlOnLocalhost(filename: string, htmlContent: string): Promise<string> {
   // Reset state for new serving session
@@ -92,7 +95,7 @@ export async function serveHtmlOnLocalhost(filename: string, htmlContent: string
 }
 
 /**
- * Creates an HTTP server on the specified port
+ * Creates an HTTP server on the specified port with WebSocket support
  */
 function createServer(port: number, htmlFilePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -117,7 +120,7 @@ function createServer(port: number, htmlFilePath: string): Promise<void> {
         const htmlContent = fs.readFileSync(htmlFilePath, 'utf8');
         res.end(htmlContent);
       }
-      // Route for recording the selection
+      // Route for recording the selection (keep for backward compatibility)
       else if (req.url === '/design-selection-result' && req.method === 'POST') {
         logger.log(`Received POST request to /design-selection-result`);
         let body = '';
@@ -134,8 +137,17 @@ function createServer(port: number, htmlFilePath: string): Promise<void> {
             logger.log(`Successfully parsed JSON. Design selected: ${data.selectedDesign}`);
             selectedDesign = data.selectedDesign;
             
-            // This is critical - write to the debug log file directly to ensure it's saved
+            // Write to the debug log file
             fs.appendFileSync(path.join(tmpDir, 'selection.log'), `SELECTION: ${data.selectedDesign}\n`);
+            
+            // Notify via WebSocket if connected
+            if (activeWebSocket && activeWebSocket.readyState === WebSocket.OPEN) {
+              activeWebSocket.send(JSON.stringify({
+                type: 'selection',
+                selectedDesign: data.selectedDesign,
+                timestamp: new Date().toISOString()
+              }));
+            }
             
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ status: 'success', message: 'Design selection received' }));
@@ -147,16 +159,57 @@ function createServer(port: number, htmlFilePath: string): Promise<void> {
           }
         });
       }
-      // Route for checking if selection is finalized (polling)
-      else if (req.url === '/design-selection-finalized') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ finalized: selectionComplete }));
-      }
       // 404 for any other routes
       else {
         res.writeHead(404);
         res.end('Not found');
       }
+    });
+    
+    // Create WebSocket server
+    wss = new WebSocketServer({ server });
+    
+    wss.on('connection', (ws) => {
+      logger.log('WebSocket client connected');
+      activeWebSocket = ws;
+      
+      // Send initial connection status
+      ws.send(JSON.stringify({
+        type: 'connected',
+        message: 'WebSocket connection established'
+      }));
+      
+      ws.on('message', (message) => {
+        try {
+          const data = JSON.parse(message.toString());
+          logger.log(`WebSocket message received: ${JSON.stringify(data)}`);
+          
+          if (data.type === 'selection') {
+            selectedDesign = data.selectedDesign;
+            fs.appendFileSync(path.join(tmpDir, 'selection.log'), `SELECTION: ${data.selectedDesign}\n`);
+            
+            // Send confirmation back
+            ws.send(JSON.stringify({
+              type: 'selection-confirmed',
+              selectedDesign: data.selectedDesign,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        } catch (error) {
+          logger.error(`WebSocket message error: ${error}`);
+        }
+      });
+      
+      ws.on('close', () => {
+        logger.log('WebSocket client disconnected');
+        if (activeWebSocket === ws) {
+          activeWebSocket = null;
+        }
+      });
+      
+      ws.on('error', (error) => {
+        logger.error(`WebSocket error: ${error}`);
+      });
     });
     
     // Start the server
@@ -193,12 +246,32 @@ export function isSelectionComplete(): boolean {
 export function notifySelectionFinalized(): void {
   logger.log('notifySelectionFinalized called');
   selectionComplete = true;
+  
+  // Notify via WebSocket
+  if (activeWebSocket && activeWebSocket.readyState === WebSocket.OPEN) {
+    activeWebSocket.send(JSON.stringify({
+      type: 'finalized',
+      message: 'Selection process complete'
+    }));
+  }
 }
 
 /**
  * Stops the local server
  */
 export function stopLocalServer(): void {
+  if (wss) {
+    wss.close(() => {
+      logger.log('WebSocket server closed');
+    });
+    wss = null;
+  }
+  
+  if (activeWebSocket) {
+    activeWebSocket.close();
+    activeWebSocket = null;
+  }
+  
   if (server) {
     try {
       // Use a more graceful shutdown approach
