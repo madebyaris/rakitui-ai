@@ -40,6 +40,46 @@ npm run build
 
 ## Usage
 
+### Quick Start Example
+
+Here's how simple it is to use the design selection tool:
+
+```javascript
+// Just provide 3 designs with names and HTML
+const result = await tool.execute({
+  design_name_1: "Tailwind Button",
+  design_html_1: `<button class="bg-blue-500 text-white px-4 py-2 rounded">Click me</button>`,
+  
+  design_name_2: "CSS Button", 
+  design_html_2: `<button style="background: blue; color: white; padding: 8px 16px; border: none; border-radius: 4px;">Click me</button>`,
+  
+  design_name_3: "Bootstrap Button",
+  design_html_3: `<button class="btn btn-primary">Click me</button>`
+});
+
+// Get your selection instantly
+console.log(result.selectedDesign); // "CSS Button"
+console.log(result.selectedDesignHtml); // The HTML code
+```
+
+**That's it!** The tool automatically:
+- ✨ Detects CSS frameworks (Tailwind, Bootstrap, etc.)
+- 📱 Adapts layout based on component complexity 
+- 🖱️ Provides click-to-zoom and keyboard shortcuts
+- 🎨 Shows beautiful, isolated previews
+- ⚡ Returns the selected design with full details
+
+### Features at a Glance
+
+| Feature | Description |
+|---------|-------------|
+| 🎯 **Smart Layout** | Gallery view for complex components, card view for simple ones |
+| 🛡️ **CSS Isolation** | No style conflicts between different frameworks |
+| 📱 **Mobile Ready** | Touch-friendly interface with responsive design |
+| ⌨️ **Keyboard Shortcuts** | Press 1, 2, or 3 for instant selection |
+| 🔍 **Zoom View** | Click any design to see it larger |
+| 📋 **Copy Code** | One-click copy of selected HTML |
+
 ### As an MCP Server
 
 1. Start the MCP server:

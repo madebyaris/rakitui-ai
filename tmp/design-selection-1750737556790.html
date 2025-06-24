@@ -1,353 +1,4 @@
-export interface DesignInput {
-  design_name_1: string;
-  design_html_1: string;
-  design_name_2: string;
-  design_html_2: string;
-  design_name_3: string;
-  design_html_3: string;
-}
 
-/**
- * Detects CSS framework usage in HTML content
- */
-function detectCSSFramework(html: string): string[] {
-  const frameworks: string[] = [];
-  const lowerHtml = html.toLowerCase();
-  
-  if (lowerHtml.includes('class="') || lowerHtml.includes("class='")) {
-    // Check for Tailwind CSS
-    if (lowerHtml.match(/class=['"][^'"]*(?:bg-|text-|p-|m-|w-|h-|flex|grid|border-)/)) {
-      frameworks.push('tailwind');
-    }
-    
-    // Check for Bootstrap
-    if (lowerHtml.match(/class=['"][^'"]*(?:btn|container|row|col-|nav|card|alert)/)) {
-      frameworks.push('bootstrap');
-    }
-    
-    // Check for Bulma
-    if (lowerHtml.match(/class=['"][^'"]*(?:button|container|columns|column|notification|hero)/)) {
-      frameworks.push('bulma');
-    }
-    
-    // Check for Foundation
-    if (lowerHtml.match(/class=['"][^'"]*(?:button|grid-container|grid-x|cell|callout)/)) {
-      frameworks.push('foundation');
-    }
-    
-    // Check for Semantic UI
-    if (lowerHtml.match(/class=['"][^'"]*(?:ui |button|container|grid|segment|header)/)) {
-      frameworks.push('semantic-ui');
-    }
-  }
-  
-  return frameworks;
-}
-
-/**
- * Extracts CSS from HTML content
- */
-function extractStyles(html: string): { css: string; cleanHtml: string } {
-  const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
-  const linkRegex = /<link[^>]*rel=['"]stylesheet['"][^>]*>/gi;
-  
-  let css = '';
-  let cleanHtml = html;
-  
-  // Extract inline styles
-  let match;
-  while ((match = styleRegex.exec(html)) !== null) {
-    css += match[1] + '\n';
-    cleanHtml = cleanHtml.replace(match[0], '');
-  }
-  
-  // Extract link tags (we'll note them but can't fetch external CSS)
-  const linkMatches = html.match(linkRegex);
-  if (linkMatches) {
-    css += `/* External stylesheets detected: ${linkMatches.length} */\n`;
-    cleanHtml = cleanHtml.replace(linkRegex, '');
-  }
-  
-  return { css, cleanHtml };
-}
-
-/**
- * Wraps HTML content in an isolated container
- */
-function wrapInIsolatedContainer(html: string, index: number, frameworks: string[]): string {
-  const containerClass = `design-component-${index}`;
-  
-  // Create CSS-in-JS style isolation
-  let isolationStyles = '';
-  
-  if (frameworks.includes('tailwind')) {
-    // For Tailwind, we need to ensure our container doesn't interfere
-    isolationStyles = `
-      .${containerClass} {
-        /* Reset any inherited Tailwind styles */
-        all: initial;
-        font-family: inherit;
-        color: inherit;
-        display: block;
-      }
-      .${containerClass} * {
-        box-sizing: border-box;
-      }
-    `;
-  } else if (frameworks.includes('bootstrap')) {
-    // For Bootstrap, ensure container works with Bootstrap grid
-    isolationStyles = `
-      .${containerClass} {
-        /* Ensure Bootstrap compatibility */
-        width: 100%;
-        display: block;
-      }
-    `;
-  }
-  
-  return `
-    <div class="${containerClass}" data-framework="${frameworks.join(',')}" data-isolation="true">
-      <style scoped>
-        ${isolationStyles}
-      </style>
-      ${html}
-    </div>
-  `;
-}
-
-/**
- * Safely encodes HTML for use in JavaScript
- */
-function safeEncodeForJS(html: string): string {
-  return btoa(encodeURIComponent(html))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-}
-
-/**
- * Safely decodes HTML from JavaScript
- */
-function generateDecodeFunction(): string {
-  return `
-    function safeDecode(encoded) {
-      try {
-        // Reverse the safe encoding
-        const base64 = encoded
-          .replace(/-/g, '+')
-          .replace(/_/g, '/')
-          .padEnd(encoded.length + (4 - encoded.length % 4) % 4, '=');
-        return decodeURIComponent(atob(base64));
-      } catch (error) {
-        console.error('Decode error:', error);
-        return '';
-      }
-    }
-  `;
-}
-
-/**
- * Generates framework-specific CSS based on detected frameworks
- */
-function generateFrameworkCSS(frameworks: string[]): string {
-  let css = '';
-  
-  if (frameworks.includes('tailwind')) {
-    css += `
-      /* Tailwind compatibility styles */
-      .design-content [class*="bg-"], 
-      .design-content [class*="text-"],
-      .design-content [class*="border-"] {
-        /* Preserve Tailwind classes */
-      }
-    `;
-  }
-  
-  if (frameworks.includes('bootstrap')) {
-    css += `
-      /* Bootstrap compatibility styles */
-      .design-content .btn,
-      .design-content .card,
-      .design-content .container,
-      .design-content [class*="col-"] {
-        /* Preserve Bootstrap classes */
-      }
-    `;
-  }
-  
-  if (frameworks.includes('bulma')) {
-    css += `
-      /* Bulma compatibility styles */
-      .design-content .button,
-      .design-content .card,
-      .design-content .container,
-      .design-content [class*="column"] {
-        /* Preserve Bulma classes */
-      }
-    `;
-  }
-  
-  return css;
-}
-
-/**
- * Analyzes component size and complexity to determine optimal layout
- */
-function analyzeComponentLayout(html: string): 'gallery' | 'card' {
-  const lowerHtml = html.toLowerCase();
-  
-  // Count elements and complexity indicators
-  const elementCount = (html.match(/<[^\/][^>]*>/g) || []).length;
-  const hasImages = lowerHtml.includes('<img') || lowerHtml.includes('background-image');
-  const hasComplexLayout = lowerHtml.includes('grid') || lowerHtml.includes('flex') || lowerHtml.includes('columns');
-  const hasMultipleSections = (html.match(/<(div|section|article|header|footer|main)[^>]*>/g) || []).length > 3;
-  const textLength = html.replace(/<[^>]*>/g, '').length;
-  
-  // Determine if component is large/complex enough for gallery view
-  const isLargeComponent = elementCount > 10 || 
-                          textLength > 500 || 
-                          hasImages || 
-                          hasComplexLayout || 
-                          hasMultipleSections;
-  
-  return isLargeComponent ? 'gallery' : 'card';
-}
-
-/**
- * Generates layout-specific CSS based on component analysis
- */
-function generateLayoutCSS(layouts: ('gallery' | 'card')[]): string {
-  const hasGallery = layouts.includes('gallery');
-  const hasCard = layouts.includes('card');
-  
-  if (hasGallery && hasCard) {
-    // Mixed layout - responsive approach
-    return `
-      /* Mixed Layout: Gallery + Card */
-      .designs-container.mixed-layout {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 20px;
-        justify-content: center;
-        margin-bottom: 60px;
-        padding: 0 20px;
-      }
-      
-      .design-container.gallery-layout {
-        max-width: none;
-        flex: 1 1 100%;
-        min-height: 400px;
-      }
-      
-      .design-container.card-layout {
-        max-width: 400px;
-        flex: 1 1 320px;
-      }
-    `;
-  } else if (hasGallery) {
-    // All gallery layout
-    return `
-      /* Gallery Layout: Large Components */
-      .designs-container.gallery-layout {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 15px;
-        justify-content: center;
-        margin-bottom: 40px;
-        padding: 0 15px;
-      }
-      
-      .design-container.gallery-layout {
-        padding: 15px;
-        margin-bottom: 0;
-        min-height: 350px;
-        border-radius: 12px;
-      }
-      
-      .design-content.gallery-layout {
-        min-height: 200px;
-        max-height: 250px;
-        overflow: hidden;
-        position: relative;
-      }
-      
-      .design-content.gallery-layout::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 30px;
-        background: linear-gradient(transparent, rgba(255,255,255,0.9));
-        pointer-events: none;
-      }
-      
-      .design-name.gallery-layout {
-        font-size: 18px;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-      }
-      
-      .buttons-container.gallery-layout {
-        margin-top: 15px;
-        padding: 10px;
-      }
-      
-      .buttons-container.gallery-layout button {
-        padding: 12px 24px;
-        font-size: 14px;
-        min-height: 44px;
-        min-width: 140px;
-      }
-    `;
-  }
-  
-  return '';
-}
-
-export function generateDesignSelectionHTML(input: DesignInput): string {
-  // Sanitize design names to prevent XSS
-  const sanitizeName = (name: string) => {
-    return name.replace(/[<>'"]/g, '');
-  };
-  
-  // Detect frameworks in each design
-  const design1Frameworks = detectCSSFramework(input.design_html_1);
-  const design2Frameworks = detectCSSFramework(input.design_html_2);
-  const design3Frameworks = detectCSSFramework(input.design_html_3);
-  
-  // Analyze layout requirements for each design
-  const design1Layout = analyzeComponentLayout(input.design_html_1);
-  const design2Layout = analyzeComponentLayout(input.design_html_2);
-  const design3Layout = analyzeComponentLayout(input.design_html_3);
-  
-  const allLayouts = [design1Layout, design2Layout, design3Layout];
-  const layoutType = allLayouts.every(l => l === 'gallery') ? 'gallery' : 
-                    allLayouts.every(l => l === 'card') ? 'card' : 'mixed';
-  
-  // Combine all detected frameworks
-  const allFrameworks = [...new Set([...design1Frameworks, ...design2Frameworks, ...design3Frameworks])];
-  
-  // Extract and process styles from each design
-  const design1Processed = extractStyles(input.design_html_1);
-  const design2Processed = extractStyles(input.design_html_2);
-  const design3Processed = extractStyles(input.design_html_3);
-  
-  // Wrap designs in isolated containers
-  const wrappedDesign1 = wrapInIsolatedContainer(design1Processed.cleanHtml, 1, design1Frameworks);
-  const wrappedDesign2 = wrapInIsolatedContainer(design2Processed.cleanHtml, 2, design2Frameworks);
-  const wrappedDesign3 = wrapInIsolatedContainer(design3Processed.cleanHtml, 3, design3Frameworks);
-  
-  // Generate framework-specific and layout-specific CSS
-  const frameworkCSS = generateFrameworkCSS(allFrameworks);
-  const layoutCSS = generateLayoutCSS(allLayouts);
-  
-  // Safe encoding for JavaScript
-  const encodedDesign1 = safeEncodeForJS(input.design_html_1);
-  const encodedDesign2 = safeEncodeForJS(input.design_html_2);
-  const encodedDesign3 = safeEncodeForJS(input.design_html_3);
-  
-  return `
     <!DOCTYPE html>
     <html>
     <head>
@@ -356,14 +7,14 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
       <title>UI Component Selection</title>
       
       <!-- Framework Detection Meta -->
-      <meta name="detected-frameworks" content="${allFrameworks.join(',')}">
+      <meta name="detected-frameworks" content="tailwind,bootstrap">
       
       <!-- External Framework Links (if needed) -->
-      ${allFrameworks.includes('tailwind') ? '<script src="https://cdn.tailwindcss.com"></script>' : ''}
-      ${allFrameworks.includes('bootstrap') ? '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">' : ''}
-      ${allFrameworks.includes('bulma') ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">' : ''}
-      ${allFrameworks.includes('foundation') ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css">' : ''}
-      ${allFrameworks.includes('semantic-ui') ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">' : ''}
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      
+      
+      
       
       <style>
         /* Base Reset and Layout */
@@ -380,10 +31,25 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
         }
         
         /* Framework Compatibility Styles */
-        ${frameworkCSS}
+        
+      /* Tailwind compatibility styles */
+      .design-content [class*="bg-"], 
+      .design-content [class*="text-"],
+      .design-content [class*="border-"] {
+        /* Preserve Tailwind classes */
+      }
+    
+      /* Bootstrap compatibility styles */
+      .design-content .btn,
+      .design-content .card,
+      .design-content .container,
+      .design-content [class*="col-"] {
+        /* Preserve Bootstrap classes */
+      }
+    
         
         /* Layout-Specific Styles */
-        ${layoutCSS}
+        
         
         /* Component Isolation Styles */
         .design-content {
@@ -858,13 +524,13 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
         
         /* Extracted styles for each design */
         <style id="design-1-styles">
-          ${design1Processed.css}
+          
         </style>
         <style id="design-2-styles">
-          ${design2Processed.css}
+          
         </style>
         <style id="design-3-styles">
-          ${design3Processed.css}
+          
         </style>
       </style>
     </head>
@@ -878,97 +544,174 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
       
       <div class="instructions">
         <p><strong>Choose your preferred component design.</strong> Each design is isolated and framework-compatible. 
-        ${allFrameworks.length > 0 ? `Detected frameworks: <strong>${allFrameworks.join(', ')}</strong>` : 'No frameworks detected - vanilla CSS/HTML'}
-        ${layoutType !== 'card' ? `<br><em>Using ${layoutType} layout for optimal ${layoutType === 'gallery' ? 'large component' : 'mixed component'} viewing.</em>` : ''}
+        Detected frameworks: <strong>tailwind, bootstrap</strong>
+        
         </p>
       </div>
       
-      <div class="designs-container ${layoutType === 'mixed' ? 'mixed-layout' : layoutType + '-layout'}">
-        <div class="design-container ${design1Layout}-layout" data-design="${sanitizeName(input.design_name_1)}" data-index="1" data-layout="${design1Layout}">
-          <div class="design-name ${design1Layout}-layout">
-            ${sanitizeName(input.design_name_1)}
+      <div class="designs-container card-layout">
+        <div class="design-container card-layout" data-design="Tailwind Button" data-index="1" data-layout="card">
+          <div class="design-name card-layout">
+            Tailwind Button
             <span class="keyboard-hint">Press 1</span>
           </div>
           
           <div class="framework-badges">
-            ${design1Frameworks.length > 0 
-              ? design1Frameworks.map(fw => `<span class="framework-badge ${fw}">${fw}</span>`).join('')
-              : '<span class="framework-badge vanilla">Vanilla CSS</span>'
-            }
-            <span class="layout-badge ${design1Layout}">${design1Layout === 'gallery' ? '🖼️ Gallery' : '📝 Card'}</span>
+            <span class="framework-badge tailwind">tailwind</span>
+            <span class="layout-badge card">📝 Card</span>
           </div>
           
-          <div class="design-content ${design1Layout}-layout" data-framework="${design1Frameworks.join(',')}" data-index="1">
+          <div class="design-content card-layout" data-framework="tailwind" data-index="1">
             <button class="code-toggle" onclick="toggleCode(event, 1)">View Code</button>
-            ${wrappedDesign1}
+            
+    <div class="design-component-1" data-framework="tailwind" data-isolation="true">
+      <style scoped>
+        
+      .design-component-1 {
+        /* Reset any inherited Tailwind styles */
+        all: initial;
+        font-family: inherit;
+        color: inherit;
+        display: block;
+      }
+      .design-component-1 * {
+        box-sizing: border-box;
+      }
+    
+      </style>
+      
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Click me
+      </button>
+    
+    </div>
+  
             <div class="code-view" id="codeView1">
-              <button class="copy-button" onclick="copyCode(event, '${encodedDesign1}')">Copy HTML</button>
-              <pre><code>${escapeHtml(input.design_html_1)}</code></pre>
+              <button class="copy-button" onclick="copyCode(event, 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwY2xhc3MlM0QlMjJiZy1ibHVlLTUwMCUyMGhvdmVyJTNBYmctYmx1ZS03MDAlMjB0ZXh0LXdoaXRlJTIwZm9udC1ib2xkJTIwcHktMiUyMHB4LTQlMjByb3VuZGVkJTIyJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwQ2xpY2slMjBtZSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQyUyRmJ1dHRvbiUzRSUwQSUyMCUyMCUyMCUyMA')">Copy HTML</button>
+              <pre><code>
+      &lt;button class=&quot;bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded&quot;&gt;
+        Click me
+      &lt;/button&gt;
+    </code></pre>
             </div>
           </div>
           
-          <div class="buttons-container ${design1Layout}-layout">
-            <button id="btn1" onclick="selectDesign('${sanitizeName(input.design_name_1)}', 'btn1', '${encodedDesign1}')">
+          <div class="buttons-container card-layout">
+            <button id="btn1" onclick="selectDesign('Tailwind Button', 'btn1', 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwY2xhc3MlM0QlMjJiZy1ibHVlLTUwMCUyMGhvdmVyJTNBYmctYmx1ZS03MDAlMjB0ZXh0LXdoaXRlJTIwZm9udC1ib2xkJTIwcHktMiUyMHB4LTQlMjByb3VuZGVkJTIyJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwQ2xpY2slMjBtZSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQyUyRmJ1dHRvbiUzRSUwQSUyMCUyMCUyMCUyMA')">
               Select This Design
             </button>
           </div>
         </div>
 
-        <div class="design-container ${design2Layout}-layout" data-design="${sanitizeName(input.design_name_2)}" data-index="2" data-layout="${design2Layout}">
-          <div class="design-name ${design2Layout}-layout">
-            ${sanitizeName(input.design_name_2)}
+        <div class="design-container card-layout" data-design="CSS Button" data-index="2" data-layout="card">
+          <div class="design-name card-layout">
+            CSS Button
             <span class="keyboard-hint">Press 2</span>
           </div>
           
           <div class="framework-badges">
-            ${design2Frameworks.length > 0 
-              ? design2Frameworks.map(fw => `<span class="framework-badge ${fw}">${fw}</span>`).join('')
-              : '<span class="framework-badge vanilla">Vanilla CSS</span>'
-            }
-            <span class="layout-badge ${design2Layout}">${design2Layout === 'gallery' ? '🖼️ Gallery' : '📝 Card'}</span>
+            <span class="framework-badge vanilla">Vanilla CSS</span>
+            <span class="layout-badge card">📝 Card</span>
           </div>
           
-          <div class="design-content ${design2Layout}-layout" data-framework="${design2Frameworks.join(',')}" data-index="2">
+          <div class="design-content card-layout" data-framework="" data-index="2">
             <button class="code-toggle" onclick="toggleCode(event, 2)">View Code</button>
-            ${wrappedDesign2}
+            
+    <div class="design-component-2" data-framework="" data-isolation="true">
+      <style scoped>
+        
+      </style>
+      
+      <button style="
+        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+      " 
+      onmouseover="this.style.transform='translateY(-2px)'"
+      onmouseout="this.style.transform='translateY(0)'">
+        Click me
+      </button>
+    
+    </div>
+  
             <div class="code-view" id="codeView2">
-              <button class="copy-button" onclick="copyCode(event, '${encodedDesign2}')">Copy HTML</button>
-              <pre><code>${escapeHtml(input.design_html_2)}</code></pre>
+              <button class="copy-button" onclick="copyCode(event, 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwc3R5bGUlM0QlMjIlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBiYWNrZ3JvdW5kJTNBJTIwbGluZWFyLWdyYWRpZW50KDQ1ZGVnJTJDJTIwJTIzNjY3ZWVhJTIwMCUyNSUyQyUyMCUyMzc2NGJhMiUyMDEwMCUyNSklM0IlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBjb2xvciUzQSUyMHdoaXRlJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwYm9yZGVyJTNBJTIwbm9uZSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHBhZGRpbmclM0ElMjAxMnB4JTIwMjRweCUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJvcmRlci1yYWRpdXMlM0ElMjAyNXB4JTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwZm9udC13ZWlnaHQlM0ElMjBib2xkJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwY3Vyc29yJTNBJTIwcG9pbnRlciUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJveC1zaGFkb3clM0ElMjAwJTIwNHB4JTIwMTVweCUyMHJnYmEoMCUyQzAlMkMwJTJDMC4yKSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHRyYW5zaXRpb24lM0ElMjB0cmFuc2Zvcm0lMjAwLjJzJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIyJTIwJTBBJTIwJTIwJTIwJTIwJTIwJTIwb25tb3VzZW92ZXIlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKC0ycHgpJyUyMiUwQSUyMCUyMCUyMCUyMCUyMCUyMG9ubW91c2VvdXQlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKDApJyUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMENsaWNrJTIwbWUlMEElMjAlMjAlMjAlMjAlMjAlMjAlM0MlMkZidXR0b24lM0UlMEElMjAlMjAlMjAlMjA')">Copy HTML</button>
+              <pre><code>
+      &lt;button style=&quot;
+        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+      &quot; 
+      onmouseover=&quot;this.style.transform=&#39;translateY(-2px)&#39;&quot;
+      onmouseout=&quot;this.style.transform=&#39;translateY(0)&#39;&quot;&gt;
+        Click me
+      &lt;/button&gt;
+    </code></pre>
             </div>
           </div>
           
-          <div class="buttons-container ${design2Layout}-layout">
-            <button id="btn2" onclick="selectDesign('${sanitizeName(input.design_name_2)}', 'btn2', '${encodedDesign2}')">
+          <div class="buttons-container card-layout">
+            <button id="btn2" onclick="selectDesign('CSS Button', 'btn2', 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwc3R5bGUlM0QlMjIlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBiYWNrZ3JvdW5kJTNBJTIwbGluZWFyLWdyYWRpZW50KDQ1ZGVnJTJDJTIwJTIzNjY3ZWVhJTIwMCUyNSUyQyUyMCUyMzc2NGJhMiUyMDEwMCUyNSklM0IlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBjb2xvciUzQSUyMHdoaXRlJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwYm9yZGVyJTNBJTIwbm9uZSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHBhZGRpbmclM0ElMjAxMnB4JTIwMjRweCUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJvcmRlci1yYWRpdXMlM0ElMjAyNXB4JTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwZm9udC13ZWlnaHQlM0ElMjBib2xkJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwY3Vyc29yJTNBJTIwcG9pbnRlciUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJveC1zaGFkb3clM0ElMjAwJTIwNHB4JTIwMTVweCUyMHJnYmEoMCUyQzAlMkMwJTJDMC4yKSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHRyYW5zaXRpb24lM0ElMjB0cmFuc2Zvcm0lMjAwLjJzJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIyJTIwJTBBJTIwJTIwJTIwJTIwJTIwJTIwb25tb3VzZW92ZXIlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKC0ycHgpJyUyMiUwQSUyMCUyMCUyMCUyMCUyMCUyMG9ubW91c2VvdXQlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKDApJyUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMENsaWNrJTIwbWUlMEElMjAlMjAlMjAlMjAlMjAlMjAlM0MlMkZidXR0b24lM0UlMEElMjAlMjAlMjAlMjA')">
               Select This Design
             </button>
           </div>
         </div>
 
-        <div class="design-container ${design3Layout}-layout" data-design="${sanitizeName(input.design_name_3)}" data-index="3" data-layout="${design3Layout}">
-          <div class="design-name ${design3Layout}-layout">
-            ${sanitizeName(input.design_name_3)}
+        <div class="design-container card-layout" data-design="Bootstrap Button" data-index="3" data-layout="card">
+          <div class="design-name card-layout">
+            Bootstrap Button
             <span class="keyboard-hint">Press 3</span>
           </div>
           
           <div class="framework-badges">
-            ${design3Frameworks.length > 0 
-              ? design3Frameworks.map(fw => `<span class="framework-badge ${fw}">${fw}</span>`).join('')
-              : '<span class="framework-badge vanilla">Vanilla CSS</span>'
-            }
-            <span class="layout-badge ${design3Layout}">${design3Layout === 'gallery' ? '🖼️ Gallery' : '📝 Card'}</span>
+            <span class="framework-badge bootstrap">bootstrap</span>
+            <span class="layout-badge card">📝 Card</span>
           </div>
           
-          <div class="design-content ${design3Layout}-layout" data-framework="${design3Frameworks.join(',')}" data-index="3">
+          <div class="design-content card-layout" data-framework="bootstrap" data-index="3">
             <button class="code-toggle" onclick="toggleCode(event, 3)">View Code</button>
-            ${wrappedDesign3}
+            
+    <div class="design-component-3" data-framework="bootstrap" data-isolation="true">
+      <style scoped>
+        
+      .design-component-3 {
+        /* Ensure Bootstrap compatibility */
+        width: 100%;
+        display: block;
+      }
+    
+      </style>
+      
+      <button type="button" class="btn btn-primary btn-lg">
+        Click me
+      </button>
+    
+    </div>
+  
             <div class="code-view" id="codeView3">
-              <button class="copy-button" onclick="copyCode(event, '${encodedDesign3}')">Copy HTML</button>
-              <pre><code>${escapeHtml(input.design_html_3)}</code></pre>
+              <button class="copy-button" onclick="copyCode(event, 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwdHlwZSUzRCUyMmJ1dHRvbiUyMiUyMGNsYXNzJTNEJTIyYnRuJTIwYnRuLXByaW1hcnklMjBidG4tbGclMjIlM0UlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBDbGljayUyMG1lJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDJTJGYnV0dG9uJTNFJTBBJTIwJTIwJTIwJTIw')">Copy HTML</button>
+              <pre><code>
+      &lt;button type=&quot;button&quot; class=&quot;btn btn-primary btn-lg&quot;&gt;
+        Click me
+      &lt;/button&gt;
+    </code></pre>
             </div>
           </div>
           
-          <div class="buttons-container ${design3Layout}-layout">
-            <button id="btn3" onclick="selectDesign('${sanitizeName(input.design_name_3)}', 'btn3', '${encodedDesign3}')">
+          <div class="buttons-container card-layout">
+            <button id="btn3" onclick="selectDesign('Bootstrap Button', 'btn3', 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwdHlwZSUzRCUyMmJ1dHRvbiUyMiUyMGNsYXNzJTNEJTIyYnRuJTIwYnRuLXByaW1hcnklMjBidG4tbGclMjIlM0UlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBDbGljayUyMG1lJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDJTJGYnV0dG9uJTNFJTBBJTIwJTIwJTIwJTIw')">
               Select This Design
             </button>
           </div>
@@ -983,7 +726,21 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
       </div>
 
       <script>
-        ${generateDecodeFunction()}
+        
+    function safeDecode(encoded) {
+      try {
+        // Reverse the safe encoding
+        const base64 = encoded
+          .replace(/-/g, '+')
+          .replace(/_/g, '/')
+          .padEnd(encoded.length + (4 - encoded.length % 4) % 4, '=');
+        return decodeURIComponent(atob(base64));
+      } catch (error) {
+        console.error('Decode error:', error);
+        return '';
+      }
+    }
+  
         
         let ws = null;
         let reconnectAttempts = 0;
@@ -1046,7 +803,7 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
           const feedback = document.createElement('div');
           feedback.className = 'success-animation';
           feedback.innerHTML = '🎉 Selection Confirmed!';
-          feedback.style.cssText = \`
+          feedback.style.cssText = `
             position: fixed;
             top: 50%;
             left: 50%;
@@ -1060,7 +817,7 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
             box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
             z-index: 4000;
             animation: successPulse 2s ease-out;
-          \`;
+          `;
           document.body.appendChild(feedback);
           
           setTimeout(() => feedback.remove(), 2000);
@@ -1101,14 +858,14 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
             name: name,
             html: safeDecode(encodedHtml),
             timestamp: new Date().toISOString(),
-            frameworks: document.querySelector(\`[data-design="\${name}"]\`).dataset.framework
+            frameworks: document.querySelector(`[data-design="${name}"]`).dataset.framework
           };
           
           // Update UI immediately
           document.querySelectorAll('.design-container').forEach(container => {
             container.classList.remove('selected');
           });
-          document.querySelector(\`[data-design="\${name}"]\`).classList.add('selected');
+          document.querySelector(`[data-design="${name}"]`).classList.add('selected');
           
           document.querySelectorAll('button[id^="btn"]').forEach(btn => btn.disabled = true);
           document.getElementById(btnId).innerHTML = '✅ Selected';
@@ -1189,27 +946,17 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
         
         // Add success animation CSS
         const successStyle = document.createElement('style');
-        successStyle.textContent = \`
+        successStyle.textContent = `
           @keyframes successPulse {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
           }
-        \`;
+        `;
         document.head.appendChild(successStyle);
         
-        console.log('UI Component Selection initialized with frameworks:', '${allFrameworks.join(', ')}');
+        console.log('UI Component Selection initialized with frameworks:', 'tailwind, bootstrap');
       </script>
     </body>
     </html>
-  `;
-}
-
-function escapeHtml(html: string): string {
-  return html
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-} 
+  
