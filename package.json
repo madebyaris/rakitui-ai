@@ -22,7 +22,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
     "@types/ws": "^8.18.1",
-    "mcp-framework": "^0.2.11",
+    "mcp-framework": "^0.2.15",
     "open": "^10.1.2",
     "ws": "^8.18.2"
   },
