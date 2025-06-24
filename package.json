@@ -1,6 +1,6 @@
 {
   "name": "rakitui-ai",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "An intelligent UI component design selection tool built on the Model Context Protocol (MCP). Allows AI assistants to present multiple UI designs for user selection.",
   "type": "module",
   "main": "dist/index.js",
