@@ -49,10 +49,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/rakitui-ai.git"
+    "url": "https://github.com/madebyaris/rakitui-ai.git"
   },
-  "homepage": "https://github.com/your-username/rakitui-ai#readme",
+  "homepage": "https://github.com/madebyaris/rakitui-ai#readme",
   "bugs": {
-    "url": "https://github.com/your-username/rakitui-ai/issues"
+    "url": "https://github.com/madebyaris/rakitui-ai/issues"
   }
 }
