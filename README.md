@@ -200,8 +200,40 @@ npm run watch
 
 ## License
 
-[Your License Here]
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
 Contributions are welcome! Please read the development guidelines in `.cursorrules/development-guide.mdc` before submitting PRs.
+
+---
+
+## 👨‍💻 Hire Me
+
+**I'm open to work and available for new opportunities!**
+
+Hi! I'm the creator of this MCP Design Selection Tool. I specialize in building innovative developer tools, AI integrations, and modern web applications. If you're looking for someone who can:
+
+- 🤖 Build AI-powered tools and MCP servers
+- ⚡ Create modern, responsive web applications
+- 🛠️ Develop developer experience tools
+- 🎨 Design intuitive user interfaces
+- 📱 Build cross-platform solutions
+
+I'd love to hear about your project!
+
+### 📧 Contact Information
+- **Email**: [arissetia.m@gmail.com](mailto:arissetia.m@gmail.com)
+- **Portfolio**: [madebyaris.com](https://madebyaris.com)
+- **Status**: 🟢 **Available for hire**
+
+### 💼 What I Can Help With
+- Custom MCP server development
+- AI tool integration and automation
+- Modern web application development
+- Developer experience improvements
+- Technical consulting and architecture
+
+Feel free to reach out – I'm always excited to work on interesting projects!
+
+---
