@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { MCPServer } from "mcp-framework";
 /**
- * Create and start the MCP server
+ * Create and start the MCP server with explicit configuration
  * The server will automatically discover and load tools from the tools/ directory
  */
-const server = new MCPServer();
+const server = new MCPServer({
+    name: "rakitui-ai",
+    version: "1.0.1"
+});
 // Output diagnostic information
 console.log("Starting Rakit UI AI MCP server...");
 /**
