@@ -2,16 +2,15 @@
 
 An intelligent UI component design selection tool built on the Model Context Protocol (MCP). This tool allows AI assistants to present multiple UI component designs in a browser interface for user selection.
 
-## Quick Start with npx
+## Quick Start
 
-The easiest way to use Rakit UI AI is with npx - no installation required:
+Install Rakit UI AI globally and start using it immediately:
 
 ```bash
-# Run directly with npx
-npx rakitui-ai
-
-# Or install globally and run
+# Install globally
 npm install -g rakitui-ai
+
+# Run the MCP server
 rakitui-ai
 ```
 
@@ -27,8 +26,7 @@ The tool will start an MCP server that you can connect to from your AI assistant
    {
      "mcpServers": {
        "rakitui-ai": {
-         "command": "npx",
-         "args": ["rakitui-ai"]
+         "command": "rakitui-ai"
        }
      }
    }
@@ -48,8 +46,7 @@ The tool will start an MCP server that you can connect to from your AI assistant
    {
      "mcpServers": {
        "rakitui-ai": {
-         "command": "npx",
-         "args": ["rakitui-ai"]
+         "command": "rakitui-ai"
        }
      }
    }
@@ -60,24 +57,18 @@ The tool will start an MCP server that you can connect to from your AI assistant
 ### Other IDEs
 
 For any IDE that supports MCP:
-- Use command: `npx`
-- Args: `["rakitui-ai"]`
+- Use command: `rakitui-ai`
 - The tool will be available as `mcp_rakit-ui-ai_designselection`
 
 ## Installation Options
 
-### Option 1: Use with npx (Recommended)
-```bash
-npx rakitui-ai
-```
-
-### Option 2: Global Installation
+### Option 1: Global Installation (Recommended)
 ```bash
 npm install -g rakitui-ai
 rakitui-ai
 ```
 
-### Option 3: Local Development
+### Option 2: Local Development
 ```bash
 # Clone the repository
 git clone [repository-url]
