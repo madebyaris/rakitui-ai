@@ -1,19 +1,23 @@
 {
   "name": "rakitui-ai",
-  "version": "0.0.1",
-  "description": "rakitui-ai MCP server",
+  "version": "1.0.0",
+  "description": "An intelligent UI component design selection tool built on the Model Context Protocol (MCP). Allows AI assistants to present multiple UI designs for user selection.",
   "type": "module",
+  "main": "dist/index.js",
   "bin": {
     "rakitui-ai": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "rm -rf dist/tools/* && tsc && mcp-build",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "test": "node test-improved.js"
+    "test": "node test-improved.js",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
@@ -28,5 +32,27 @@
   },
   "engines": {
     "node": ">=18.19.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ui",
+    "design",
+    "selection",
+    "ai",
+    "claude",
+    "component",
+    "tool",
+    "frontend"
+  ],
+  "author": "Aris Setiawan <arissetia.m@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/rakitui-ai.git"
+  },
+  "homepage": "https://github.com/your-username/rakitui-ai#readme",
+  "bugs": {
+    "url": "https://github.com/your-username/rakitui-ai/issues"
   }
 }

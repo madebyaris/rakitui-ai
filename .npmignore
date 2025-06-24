@@ -1,0 +1,31 @@
+# Source files
+src/
+*.ts
+tsconfig*.json
+
+# Development files
+.cursorrules/
+.cursor/
+.git/
+.gitignore
+
+# Test files
+test-*.js
+test-*.html
+
+# Temporary files
+tmp/
+*.log
+
+# Node modules and build artifacts
+node_modules/
+*.tgz
+
+# Documentation that's not needed in package
+TODO.md
+restaurant-landing.html
+PUBLISH.md
+
+# Development configs
+.eslintrc*
+.prettierrc* 
