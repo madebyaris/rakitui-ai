@@ -269,6 +269,17 @@ function generateLayoutCSS(layouts) {
     return '';
 }
 export function generateDesignSelectionHTML(input) {
+    // Validate input first
+    if (!input || typeof input !== 'object') {
+        throw new Error('Invalid input provided to generateDesignSelectionHTML');
+    }
+    // Ensure all required fields exist
+    const requiredFields = ['design_name_1', 'design_html_1', 'design_name_2', 'design_html_2', 'design_name_3', 'design_html_3'];
+    for (const field of requiredFields) {
+        if (!input[field]) {
+            throw new Error(`Missing required field: ${field}`);
+        }
+    }
     // Sanitize design names to prevent XSS
     const sanitizeName = (name) => {
         return name.replace(/[<>'"]/g, '');
@@ -301,6 +312,23 @@ export function generateDesignSelectionHTML(input) {
     const encodedDesign1 = safeEncodeForJS(input.design_html_1);
     const encodedDesign2 = safeEncodeForJS(input.design_html_2);
     const encodedDesign3 = safeEncodeForJS(input.design_html_3);
+    // Build the HTML using safer string concatenation for problematic parts
+    const styleInjectionScript = `
+        // Inject extracted styles dynamically
+        function injectDynamicStyles() {
+          const styles = [
+            { id: 'design-1-styles', css: ${JSON.stringify(design1Processed.css)} },
+            { id: 'design-2-styles', css: ${JSON.stringify(design2Processed.css)} },
+            { id: 'design-3-styles', css: ${JSON.stringify(design3Processed.css)} }
+          ];
+          
+          styles.forEach(styleData => {
+            const styleEl = document.createElement('style');
+            styleEl.id = styleData.id;
+            styleEl.textContent = styleData.css;
+            document.head.appendChild(styleEl);
+          });
+        }`;
     return `
     <!DOCTYPE html>
     <html>
@@ -810,16 +838,7 @@ export function generateDesignSelectionHTML(input) {
           box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
         }
         
-        /* Extracted styles for each design */
-        <style id="design-1-styles">
-          ${design1Processed.css}
-        </style>
-        <style id="design-2-styles">
-          ${design2Processed.css}
-        </style>
-        <style id="design-3-styles">
-          ${design3Processed.css}
-        </style>
+        /* Extracted styles for each design - will be injected dynamically */
       </style>
     </head>
     <body>
@@ -1135,7 +1154,10 @@ export function generateDesignSelectionHTML(input) {
           document.body.style.overflow = '';
         }
         
+        ${styleInjectionScript}
+        
         // Initialize
+        injectDynamicStyles();
         connectWebSocket();
         
         // Add success animation CSS
