@@ -380,627 +380,403 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
 
   return `
     <!DOCTYPE html>
-    <html>
+    <html class="light" lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>UI Component Selection</title>
-      
-      <!-- Framework Detection Meta -->
-      <meta name="detected-frameworks" content="${allFrameworks.join(',')}">
-      
-      <!-- External Framework Links (if needed) -->
-      ${allFrameworks.includes('tailwind') ? '<script src="https://cdn.tailwindcss.com"></script>' : ''}
+      <title>Design Selection Gallery</title>
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+      <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Noto+Sans:wght@300..800&display=swap" rel="stylesheet">
+      <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
       ${allFrameworks.includes('bootstrap') ? '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">' : ''}
       ${allFrameworks.includes('bulma') ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">' : ''}
       ${allFrameworks.includes('foundation') ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css">' : ''}
       ${allFrameworks.includes('semantic-ui') ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">' : ''}
-      
+      <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              colors: {
+                primary: '#135bec',
+                'background-light': '#f6f6f8',
+                'background-dark': '#101622',
+                'surface-light': '#ffffff',
+                'surface-dark': '#1e293b',
+              },
+              fontFamily: {
+                display: ['Manrope', 'Noto Sans', 'sans-serif'],
+              },
+              borderRadius: {
+                DEFAULT: '0.25rem',
+                lg: '0.5rem',
+                xl: '0.75rem',
+                full: '9999px',
+              },
+            },
+          },
+        }
+      </script>
       <style>
-        /* Base Reset and Layout */
-        * {
-          box-sizing: border-box;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background-color: #334155; }
         
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-          margin: 0; 
-          padding: 20px;
-          background-color: #f9f9f9;
-          overflow-x: hidden;
+        @keyframes fade-in-down {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
+        .animate-fade-in-down { animation: fade-in-down 0.5s ease-out; }
         
-        /* Framework Compatibility Styles */
+        /* Framework Compatibility */
         ${frameworkCSS}
         
         /* Layout-Specific Styles */
         ${layoutCSS}
         
-        /* Component Isolation Styles */
+        /* Design Content Isolation */
         .design-content {
-          margin-bottom: 20px;
-          min-height: 120px;
-          padding: 20px;
-          border: 2px dashed #e0e0e0;
-          border-radius: 8px;
-          background-color: #ffffff;
-          position: relative;
-          overflow: auto;
-          transition: all 0.3s ease;
-          
-          /* Isolation for different frameworks */
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
           contain: layout style;
-        }
-        
-        .design-content[data-framework*="tailwind"] {
-          /* Tailwind-specific container adjustments */
-          font-size: 14px;
-        }
-        
-        .design-content[data-framework*="bootstrap"] {
-          /* Bootstrap-specific container adjustments */
-          font-size: 16px;
-        }
-        
-        .design-content[data-framework*="bulma"] {
-          /* Bulma-specific container adjustments */
-          font-size: 16px;
-        }
-        
-        /* Enhanced Design Container */
-        .design-container { 
-          flex: 1 1 350px;
-          max-width: 600px;
-          margin-bottom: 30px; 
-          padding: 25px; 
-          border: 2px solid #e8e8e8; 
-          border-radius: 16px;
-          background-color: white;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
-          cursor: pointer;
-          user-select: none;
+          background: white;
+          /* Critical for containing fixed position elements like headers */
+          transform: translateZ(0);
         }
         
-        .design-container::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          border-radius: 16px;
-          background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          pointer-events: none;
+        .dark .design-content {
+          background: #0f172a;
         }
         
-        .design-container:hover {
-          transform: translateY(-12px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-          border-color: #667eea;
+        /* Design Preview Container - Matching Example */
+        .design-preview-container {
+          width: 100%;
+          aspect-ratio: 4/3;
+          background: #f3f4f6;
+          overflow: hidden;
+          position: relative;
         }
         
-        .design-container:hover::before {
-          opacity: 1;
+        .dark .design-preview-container {
+          background: #1e293b;
         }
         
-        .design-container.selected {
-          border-color: #10b981;
-          box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2), 0 20px 40px rgba(16, 185, 129, 0.15);
-          background-color: #f0fdf4;
-          transform: translateY(-8px);
+        .design-preview-container .design-content {
+          width: 200%;
+          height: 200%;
+          transform: scale(0.5);
+          transform-origin: top left;
+          overflow: hidden;
+          pointer-events: none; /* Prevent interaction in preview */
         }
-        
-        .design-container.selected::before {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-          opacity: 1;
-        }
-        
-        /* Click indicator */
-        .design-container::after {
-          content: '👆 Click to zoom or select';
-          position: absolute;
-          bottom: 10px;
-          right: 15px;
-          font-size: 12px;
-          color: #9ca3af;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          pointer-events: none;
-        }
-        
-        .design-container:hover::after {
-          opacity: 1;
-        }
-        
-        /* Layout Improvements */
-        .designs-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-          gap: 30px;
-          justify-content: center;
-          margin-bottom: 60px;
-          padding: 0 20px;
-        }
-        
-        .design-name { 
-          font-size: 22px; 
-          font-weight: 600;
-          margin-bottom: 15px;
-          padding-bottom: 12px;
-          border-bottom: 2px solid #f0f0f0;
-          color: #1a1a1a;
+
+        /* Modal Styles */
+        .full-size-modal {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
+          padding: 1rem;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
         }
         
-        .framework-badges {
+        .full-size-modal.active {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        
+        .full-size-backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.7);
+          backdrop-filter: blur(4px);
+        }
+        
+        .full-size-content {
+          position: relative;
+          width: 100%;
+          max-width: 56rem; /* max-w-4xl */
+          max-height: 90vh;
+          background: #ffffff;
+          border-radius: 1rem;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
           display: flex;
-          gap: 6px;
-          margin: 10px 0;
-          flex-wrap: wrap;
+          flex-direction: column;
+          transform: scale(0.95);
+          transition: transform 0.3s ease;
+          overflow: hidden;
         }
         
+        .dark .full-size-content {
+          background: #1e293b;
+        }
+        
+        .full-size-modal.active .full-size-content {
+          transform: scale(1);
+        }
+
+        /* Full size body adjustments */
+        .full-size-body {
+          flex: 1;
+          overflow: auto;
+          background: #f8fafc;
+          position: relative;
+          min-height: 400px;
+        }
+
+        .dark .full-size-body {
+          background: #0f172a;
+        }
+        
+        .full-size-body .design-content {
+          width: 100%;
+          height: auto;
+          min-height: 100%;
+          transform: none;
+          pointer-events: auto;
+          overflow: visible;
+        }
+        
+        /* Code View Override */
+        .code-view {
+           background: #1e293b;
+           color: #e2e8f0;
+           padding: 1.5rem;
+           overflow: auto;
+           font-family: monospace;
+           height: 100%;
+        }
+        
+        .design-content[data-framework*="tailwind"] { font-size: 14px; }
+        .design-content[data-framework*="bootstrap"] { font-size: 16px; }
+        .design-content[data-framework*="bulma"] { font-size: 16px; }
+        
+        /* Modal System */
+        .modal { opacity: 0; pointer-events: none; transition: all 0.3s; }
+        .modal:target { opacity: 1; pointer-events: auto; }
+        .modal:target .modal-content { transform: scale(1); }
+        
+        /* Framework Badges */
         .framework-badge {
-          padding: 3px 8px;
-          border-radius: 12px;
-          font-size: 11px;
+          display: inline-flex;
+          align-items: center;
+          border-radius: 9999px;
+          padding: 0.25rem 0.625rem;
+          font-size: 0.75rem;
           font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
         }
         
-        .framework-badge.tailwind { background: #38bdf8; color: white; }
-        .framework-badge.bootstrap { background: #7952b3; color: white; }
-        .framework-badge.bulma { background: #00d1b2; color: white; }
-        .framework-badge.foundation { background: #1779ba; color: white; }
-        .framework-badge.semantic-ui { background: #00b5ad; color: white; }
-        .framework-badge.vanilla { background: #6b7280; color: white; }
+        .framework-badge.tailwind { background: #dbeafe; color: #1e40af; }
+        .dark .framework-badge.tailwind { background: #1e3a8a; color: #93c5fd; }
         
-        .layout-badge {
-          padding: 3px 8px;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-left: 4px;
-        }
+        .framework-badge.bootstrap { background: #f3e8ff; color: #6b21a8; }
+        .dark .framework-badge.bootstrap { background: #6b21a8; color: #d8b4fe; }
         
-        .layout-badge.gallery { background: #8b5cf6; color: white; }
-        .layout-badge.card { background: #06b6d4; color: white; }
+        .framework-badge.bulma { background: #ccfbf1; color: #065f46; }
+        .dark .framework-badge.bulma { background: #065f46; color: #5eead4; }
         
-        /* Enhanced UI Elements */
+        .framework-badge.vanilla { background: #f1f5f9; color: #475569; }
+        .dark .framework-badge.vanilla { background: #334155; color: #cbd5e1; }
+        
+        /* Connection Status */
         .connection-status {
           position: fixed;
-          top: 20px;
-          right: 20px;
-          padding: 10px 16px;
-          border-radius: 25px;
-          font-size: 14px;
+          top: 1.5rem;
+          right: 1.5rem;
+          padding: 0.5rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.875rem;
           font-weight: 600;
-          transition: all 0.3s ease;
           z-index: 1000;
           backdrop-filter: blur(10px);
         }
         
         .connection-status.connected {
-          background-color: rgba(16, 185, 129, 0.9);
+          background: rgba(16, 185, 129, 0.9);
           color: white;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
         
         .connection-status.disconnected {
-          background-color: rgba(239, 68, 68, 0.9);
+          background: rgba(239, 68, 68, 0.9);
           color: white;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
         
         .connection-status.connecting {
-          background-color: rgba(245, 158, 11, 0.9);
+          background: rgba(245, 158, 11, 0.9);
           color: white;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
         
-        h1 {
-          text-align: center;
-          margin-bottom: 15px;
-          color: #1a1a1a;
-          font-size: 2.5rem;
-          font-weight: 700;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        
-        .subtitle {
-          text-align: center;
-          margin-bottom: 40px;
-          color: #6b7280;
-          font-size: 18px;
-          font-weight: 500;
-        }
-        
-        .instructions {
-          max-width: 800px;
-          margin: 0 auto 40px;
-          padding: 20px;
-          background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%);
-          border-radius: 12px;
-          color: #374151;
-          border: 1px solid #e5e7eb;
-        }
-        
-        /* Button Improvements */
-        button { 
-          padding: 18px 36px; 
-          font-size: 18px; 
-          font-weight: 700;
-          margin: 12px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          min-height: 56px;
-          min-width: 200px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-          transform: translateZ(0); /* Hardware acceleration */
-        }
-        
-        button:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-        }
-        
-        button:active {
-          transform: translateY(-2px) scale(0.98);
-          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        button:focus {
-          outline: none;
-          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3), 0 12px 35px rgba(102, 126, 234, 0.5);
-        }
-        
-        button.selected {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          box-shadow: 0 12px 35px rgba(16, 185, 129, 0.5);
-          animation: selectedPulse 0.6s ease-out;
-        }
-        
-        button:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-          transform: none;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-        }
-        
-        button:disabled:hover {
-          transform: none;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-        }
-        
-        /* Button ripple effect */
-        button::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 0;
-          height: 0;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
-          transform: translate(-50%, -50%);
-          transition: width 0.3s ease, height 0.3s ease;
-          pointer-events: none;
-        }
-        
-        button:active::before {
-          width: 300px;
-          height: 300px;
-        }
-        
-        /* Buttons container improvements */
-        .buttons-container {
-          text-align: center;
-          margin-top: 25px;
-          padding: 15px;
-        }
-        
-        /* Enhanced keyboard hint */
-        .keyboard-hint {
-          font-size: 13px;
-          padding: 6px 12px;
-          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-          border-radius: 8px;
-          color: #374151;
-          font-weight: 600;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          border: 1px solid #d1d5db;
-        }
-        
-        /* Code View Improvements */
-        .code-toggle {
-          position: absolute;
-          top: 15px;
-          right: 15px;
-          padding: 8px 16px;
-          background: rgba(31, 41, 55, 0.9);
-          color: white;
-          border: none;
-          border-radius: 6px;
-          font-size: 12px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          z-index: 20;
-          backdrop-filter: blur(5px);
-        }
-        
-        .code-view {
-          display: none;
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-          color: #e5e7eb;
-          padding: 20px;
-          overflow: auto;
-          font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-          font-size: 13px;
-          line-height: 1.6;
-          border-radius: 8px;
-        }
-        
-        /* Enhanced Animations */
-        @keyframes slideUp {
-          from { 
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to { 
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        
-        .design-container {
-          animation: slideUp 0.6s ease-out both;
-        }
-        
-        .design-container:nth-child(1) { animation-delay: 0.1s; }
-        .design-container:nth-child(2) { animation-delay: 0.3s; }
-        .design-container:nth-child(3) { animation-delay: 0.5s; }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          .designs-container {
-            grid-template-columns: 1fr;
-            gap: 20px;
-            padding: 0 10px;
-          }
-          
-          h1 { font-size: 2rem; }
-          .subtitle { font-size: 16px; }
-          .design-container { padding: 20px; }
-          .design-content { padding: 15px; min-height: 100px; }
-        }
-        
-        /* Framework-specific adjustments */
-        .design-component-1, .design-component-2, .design-component-3 {
-          width: 100%;
-          isolation: isolate;
-        }
-        
-        /* Loading states */
         .loading-state {
           display: inline-block;
-          width: 18px;
-          height: 18px;
+          width: 12px;
+          height: 12px;
           border: 2px solid rgba(255,255,255,0.3);
-          border-top-color: #ffffff;
+          border-top-color: white;
           border-radius: 50%;
           animation: spin 1s linear infinite;
-          margin-right: 10px;
-          vertical-align: middle;
+          margin-right: 0.5rem;
         }
         
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
         
-        @keyframes selectedPulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.08); }
-          100% { transform: scale(1); }
+        /* Success Animation */
+        @keyframes successPulse {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+          100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
-        
-        /* Touch device improvements */
-        @media (hover: none) and (pointer: coarse) {
-          button {
-            min-height: 64px;
-            min-width: 220px;
-            font-size: 20px;
-            padding: 20px 40px;
-          }
-          
-          button:active {
-            transform: scale(0.95);
-            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          }
-          
-          .design-container {
-            padding: 30px;
-          }
-          
-          .code-toggle {
-            padding: 12px 20px;
-            font-size: 14px;
-            min-height: 44px;
-          }
-        }
-        
-        /* Zoom overlay improvements */
-        .zoom-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.95);
-          display: none;
-          z-index: 3000;
-          backdrop-filter: blur(5px);
-          padding: 40px;
-          overflow: auto;
-        }
-        
-        .zoom-content {
-          background: white;
-          border-radius: 16px;
-          max-width: 95vw;
-          margin: 0 auto;
-          padding: 40px;
-          position: relative;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        }
-        
-        /* Extracted styles for each design - will be injected dynamically */
       </style>
     </head>
-    <body>
+    <body class="font-display bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-[#e2e8f0] antialiased min-h-screen flex flex-col transition-colors duration-300">
       <div class="connection-status connecting" id="connectionStatus">
         <span class="loading-state"></span> Connecting...
       </div>
       
-      <h1>UI Component Selection</h1>
-      <p class="subtitle">Compare designs with framework compatibility</p>
-      
-      <div class="instructions">
-        <p><strong>Choose your preferred component design.</strong> Each design is isolated and framework-compatible. 
-        ${allFrameworks.length > 0 ? `Detected frameworks: <strong>${allFrameworks.join(', ')}</strong>` : 'No frameworks detected - vanilla CSS/HTML'}
-        ${layoutType !== 'card' ? `<br><em>Using ${layoutType} layout for optimal ${layoutType === 'gallery' ? 'large component' : 'mixed component'} viewing.</em>` : ''}
+      <main class="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-10 lg:px-40 py-8 flex flex-col justify-center">
+        <div class="flex flex-col gap-3 py-6 animate-fade-in-down">
+          <h1 class="text-[#0d121b] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
+            Choose Your Design
+          </h1>
+          <p class="text-[#4c669a] dark:text-slate-400 text-base md:text-lg font-normal leading-normal max-w-2xl">
+            Select a design option. You can customize every detail later.
         </p>
       </div>
       
-      <div class="designs-container ${layoutType === 'mixed' ? 'mixed-layout' : layoutType + '-layout'}">
-        <div class="design-container ${design1Layout}-layout" data-design="${sanitizeName(input.design_name_1)}" data-index="1" data-layout="${design1Layout}">
-          <div class="design-name ${design1Layout}-layout">
-            ${sanitizeName(input.design_name_1)}
-            <span class="keyboard-hint">Press 1</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <!-- Design 1 -->
+          <div class="group relative flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:shadow-none dark:border dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer" onclick="openFullSize(1, '${sanitizeName(input.design_name_1)}')">
+            <div class="w-full aspect-[4/3] bg-gray-100 dark:bg-slate-800 overflow-hidden relative design-preview-container">
+               <div class="design-content" data-framework="${design1Frameworks.join(',')}" id="preview-1">
+                 ${wrappedDesign1}
+          </div>
+               <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           
-          <div class="framework-badges">
-            ${design1Frameworks.length > 0 
-              ? design1Frameworks.map(fw => `<span class="framework-badge ${fw}">${fw}</span>`).join('')
-              : '<span class="framework-badge vanilla">Vanilla CSS</span>'
-            }
-            <span class="layout-badge ${design1Layout}">${design1Layout === 'gallery' ? '🖼️ Gallery' : '📝 Card'}</span>
-          </div>
-          
-          <div class="design-content ${design1Layout}-layout" data-framework="${design1Frameworks.join(',')}" data-index="1">
-            <button class="code-toggle" onclick="toggleCode(event, 1)">View Code</button>
-            ${wrappedDesign1}
-            <div class="code-view" id="codeView1">
-              <button class="copy-button" onclick="copyCode(event, '${encodedDesign1}')">Copy HTML</button>
-              <pre><code>${escapeHtml(input.design_html_1)}</code></pre>
+            <div class="flex flex-col p-5 grow">
+              <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">Design Option 1</span>
             </div>
-          </div>
-          
-          <div class="buttons-container ${design1Layout}-layout">
-            <button id="btn1" onclick="selectDesign('${sanitizeName(input.design_name_1)}', 'btn1', '${encodedDesign1}')">
-              Select This Design
+              <h3 class="text-[#0d121b] dark:text-white text-xl font-bold leading-tight mb-2">${sanitizeName(input.design_name_1)}</h3>
+              <p class="text-[#4c669a] dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                 ${design1Frameworks.length > 0 ? `Built with ${design1Frameworks.join(' and ')}` : 'Pure CSS/HTML design'}
+              </p>
+              
+              <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="flex -space-x-2">
+                   <div class="w-6 h-6 rounded-full border-2 border-white dark:border-surface-dark bg-gray-300 flex items-center justify-center text-[10px] font-bold text-slate-600">AI</div>
+                   <div class="w-6 h-6 rounded-full border-2 border-white dark:border-surface-dark bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">UI</div>
+                </div>
+                <button class="inline-flex items-center justify-center rounded-lg h-9 px-4 bg-primary hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm shadow-blue-500/30">
+                  View Details
             </button>
           </div>
         </div>
-
-        <div class="design-container ${design2Layout}-layout" data-design="${sanitizeName(input.design_name_2)}" data-index="2" data-layout="${design2Layout}">
-          <div class="design-name ${design2Layout}-layout">
-            ${sanitizeName(input.design_name_2)}
-            <span class="keyboard-hint">Press 2</span>
           </div>
           
-          <div class="framework-badges">
-            ${design2Frameworks.length > 0 
-              ? design2Frameworks.map(fw => `<span class="framework-badge ${fw}">${fw}</span>`).join('')
-              : '<span class="framework-badge vanilla">Vanilla CSS</span>'
-            }
-            <span class="layout-badge ${design2Layout}">${design2Layout === 'gallery' ? '🖼️ Gallery' : '📝 Card'}</span>
-          </div>
-          
-          <div class="design-content ${design2Layout}-layout" data-framework="${design2Frameworks.join(',')}" data-index="2">
-            <button class="code-toggle" onclick="toggleCode(event, 2)">View Code</button>
+          <!-- Design 2 -->
+          <div class="group relative flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:shadow-none dark:border dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer" onclick="openFullSize(2, '${sanitizeName(input.design_name_2)}')">
+            <div class="w-full aspect-[4/3] bg-gray-100 dark:bg-slate-800 overflow-hidden relative design-preview-container">
+               <div class="design-content" data-framework="${design2Frameworks.join(',')}" id="preview-2">
             ${wrappedDesign2}
-            <div class="code-view" id="codeView2">
-              <button class="copy-button" onclick="copyCode(event, '${encodedDesign2}')">Copy HTML</button>
-              <pre><code>${escapeHtml(input.design_html_2)}</code></pre>
             </div>
+               <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           
-          <div class="buttons-container ${design2Layout}-layout">
-            <button id="btn2" onclick="selectDesign('${sanitizeName(input.design_name_2)}', 'btn2', '${encodedDesign2}')">
-              Select This Design
+            <div class="flex flex-col p-5 grow">
+              <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center rounded-full bg-purple-50 dark:bg-purple-900/30 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-300">Design Option 2</span>
+              </div>
+              <h3 class="text-[#0d121b] dark:text-white text-xl font-bold leading-tight mb-2">${sanitizeName(input.design_name_2)}</h3>
+              <p class="text-[#4c669a] dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                 ${design2Frameworks.length > 0 ? `Built with ${design2Frameworks.join(' and ')}` : 'Pure CSS/HTML design'}
+              </p>
+              
+              <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="flex -space-x-2">
+                   <div class="w-6 h-6 rounded-full border-2 border-white dark:border-surface-dark bg-gray-300 flex items-center justify-center text-[10px] font-bold text-slate-600">AI</div>
+                   <div class="w-6 h-6 rounded-full border-2 border-white dark:border-surface-dark bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-600">UI</div>
+                </div>
+                <button class="inline-flex items-center justify-center rounded-lg h-9 px-4 bg-primary hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm shadow-blue-500/30">
+                  View Details
             </button>
+              </div>
           </div>
         </div>
 
-        <div class="design-container ${design3Layout}-layout" data-design="${sanitizeName(input.design_name_3)}" data-index="3" data-layout="${design3Layout}">
-          <div class="design-name ${design3Layout}-layout">
-            ${sanitizeName(input.design_name_3)}
-            <span class="keyboard-hint">Press 3</span>
+          <!-- Design 3 -->
+          <div class="group relative flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:shadow-none dark:border dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer" onclick="openFullSize(3, '${sanitizeName(input.design_name_3)}')">
+            <div class="w-full aspect-[4/3] bg-gray-100 dark:bg-slate-800 overflow-hidden relative design-preview-container">
+               <div class="design-content" data-framework="${design3Frameworks.join(',')}" id="preview-3">
+                 ${wrappedDesign3}
+               </div>
+               <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           
-          <div class="framework-badges">
-            ${design3Frameworks.length > 0 
-              ? design3Frameworks.map(fw => `<span class="framework-badge ${fw}">${fw}</span>`).join('')
-              : '<span class="framework-badge vanilla">Vanilla CSS</span>'
-            }
-            <span class="layout-badge ${design3Layout}">${design3Layout === 'gallery' ? '🖼️ Gallery' : '📝 Card'}</span>
+            <div class="flex flex-col p-5 grow">
+              <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">Design Option 3</span>
           </div>
-          
-          <div class="design-content ${design3Layout}-layout" data-framework="${design3Frameworks.join(',')}" data-index="3">
-            <button class="code-toggle" onclick="toggleCode(event, 3)">View Code</button>
-            ${wrappedDesign3}
-            <div class="code-view" id="codeView3">
-              <button class="copy-button" onclick="copyCode(event, '${encodedDesign3}')">Copy HTML</button>
-              <pre><code>${escapeHtml(input.design_html_3)}</code></pre>
+              <h3 class="text-[#0d121b] dark:text-white text-xl font-bold leading-tight mb-2">${sanitizeName(input.design_name_3)}</h3>
+              <p class="text-[#4c669a] dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                 ${design3Frameworks.length > 0 ? `Built with ${design3Frameworks.join(' and ')}` : 'Pure CSS/HTML design'}
+              </p>
+              
+              <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="flex -space-x-2">
+                   <div class="w-6 h-6 rounded-full border-2 border-white dark:border-surface-dark bg-gray-300 flex items-center justify-center text-[10px] font-bold text-slate-600">AI</div>
+                   <div class="w-6 h-6 rounded-full border-2 border-white dark:border-surface-dark bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-600">UI</div>
+            </div>
+                <button class="inline-flex items-center justify-center rounded-lg h-9 px-4 bg-primary hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm shadow-blue-500/30">
+                  View Details
+                </button>
+          </div>
             </div>
           </div>
-          
-          <div class="buttons-container ${design3Layout}-layout">
-            <button id="btn3" onclick="selectDesign('${sanitizeName(input.design_name_3)}', 'btn3', '${encodedDesign3}')">
-              Select This Design
+        </div>
+      </main>
+      
+      <!-- Full Size Modal -->
+      <div class="full-size-modal" id="fullSizeModal" onclick="closeFullSize()">
+        <div class="full-size-backdrop"></div>
+        <div class="full-size-content" onclick="event.stopPropagation()">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+             <h3 class="text-xl font-bold text-slate-900 dark:text-white" id="modalTitle">Design Preview</h3>
+             <div class="flex gap-2">
+                <button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500" onclick="toggleModalCode()" title="View Code">
+                   <span class="material-symbols-outlined text-xl">code</span>
+                </button>
+                <button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500" onclick="closeFullSize()" title="Close">
+                   <span class="material-symbols-outlined text-xl">close</span>
             </button>
           </div>
         </div>
+          
+          <div class="full-size-body">
+             <div id="modalContent"></div>
+             <div id="modalCode" class="hidden absolute inset-0 z-10"></div>
       </div>
       
-      <div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()">
-        <div class="zoom-content" onclick="event.stopPropagation()">
-          <button class="zoom-close" onclick="closeZoom()">✕</button>
-          <div id="zoomContentInner"></div>
+          <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-surface-light dark:bg-surface-dark">
+             <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-lg">devices</span>
+                <span>Responsive Design</span>
+             </div>
+             <div class="flex gap-3">
+                <button class="px-4 py-2 rounded-lg text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onclick="closeFullSize()">Cancel</button>
+                <button id="modalSelectBtn" class="px-6 py-2 rounded-lg bg-primary hover:bg-blue-700 text-white font-medium transition-colors shadow-lg shadow-blue-500/20">
+                   Use Template
+                </button>
+             </div>
+          </div>
         </div>
       </div>
 
@@ -1088,13 +864,92 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
           setTimeout(() => feedback.remove(), 2000);
         }
         
-        function toggleCode(event, index) {
-          event.stopPropagation();
-          const codeView = document.getElementById('codeView' + index);
-          const isShowing = codeView.style.display === 'block';
+        let currentDesignIndex = null;
+        let designs = {
+          1: { name: '${sanitizeName(input.design_name_1)}', code: '${encodedDesign1}' },
+          2: { name: '${sanitizeName(input.design_name_2)}', code: '${encodedDesign2}' },
+          3: { name: '${sanitizeName(input.design_name_3)}', code: '${encodedDesign3}' }
+        };
+
+        function openFullSize(index, name) {
+          currentDesignIndex = index;
+          const modal = document.getElementById('fullSizeModal');
+          const modalTitle = document.getElementById('modalTitle');
+          const modalContent = document.getElementById('modalContent');
+          const modalCode = document.getElementById('modalCode');
+          const selectBtn = document.getElementById('modalSelectBtn');
+          const preview = document.getElementById('preview-' + index);
           
-          codeView.style.display = isShowing ? 'none' : 'block';
-          event.target.textContent = isShowing ? 'View Code' : 'Hide Code';
+          if (!preview) return;
+          
+          modalTitle.textContent = name;
+          
+          // clear previous content
+          modalContent.innerHTML = '';
+          
+          // Create a wrapper with the design-content class to ensure styles/containment apply
+          const contentWrapper = document.createElement('div');
+          contentWrapper.className = 'design-content';
+          // Preserve framework data attribute for specific styling
+          if (preview.dataset.framework) {
+            contentWrapper.dataset.framework = preview.dataset.framework;
+          }
+          contentWrapper.innerHTML = preview.innerHTML;
+          
+          modalContent.appendChild(contentWrapper);
+          
+          // Inject code into modal code view
+          const encodedCode = designs[index].code;
+          const decodedCode = decodeURIComponent(encodedCode);
+          modalCode.innerHTML = '<pre><code class="language-html">' + escapeHtml(decodedCode) + '</code></pre>';
+          
+          // Setup select button
+          if (selectBtn) {
+            selectBtn.onclick = function() {
+               selectDesign(name, 'modal', encodedCode);
+            };
+          }
+          
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+        
+        function closeFullSize() {
+          const modal = document.getElementById('fullSizeModal');
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+          
+          // Reset code view in modal
+          const modalCode = document.getElementById('modalCode');
+          const modalContent = document.getElementById('modalContent');
+          if (modalCode && modalContent) {
+            modalCode.classList.add('hidden');
+            modalContent.classList.remove('hidden');
+          }
+        }
+        
+        function toggleModalCode() {
+           const modalContent = document.getElementById('modalContent');
+           const modalCode = document.getElementById('modalCode');
+           
+           if (modalCode.classList.contains('hidden')) {
+              modalCode.classList.remove('hidden');
+              modalContent.classList.add('hidden');
+           } else {
+              modalCode.classList.add('hidden');
+              modalContent.classList.remove('hidden');
+           }
+        }
+        
+        function escapeHtml(text) {
+          const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+          };
+          return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
         
         function copyCode(event, encodedHtml) {
@@ -1103,12 +958,12 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
           
           navigator.clipboard.writeText(html).then(() => {
             const originalText = event.target.textContent;
-            event.target.textContent = '✅ Copied!';
-            event.target.style.background = '#10b981';
+            event.target.textContent = 'Copied!';
+            event.target.classList.add('bg-green-700');
             
             setTimeout(() => {
               event.target.textContent = originalText;
-              event.target.style.background = '';
+              event.target.classList.remove('bg-green-700');
             }, 2000);
           }).catch(err => {
             console.error('Copy failed:', err);
@@ -1123,18 +978,29 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
             name: name,
             html: safeDecode(encodedHtml),
             timestamp: new Date().toISOString(),
-            frameworks: document.querySelector(\`[data-design="\${name}"]\`).dataset.framework
+            frameworks: document.querySelector(\`[data-design="\${name}"]\`)?.dataset?.framework || ''
           };
           
           // Update UI immediately
-          document.querySelectorAll('.design-container').forEach(container => {
-            container.classList.remove('selected');
+          document.querySelectorAll('[data-design]').forEach(container => {
+            container.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
           });
-          document.querySelector(\`[data-design="\${name}"]\`).classList.add('selected');
+          const selectedContainer = document.querySelector(\`[data-design="\${name}"]\`);
+          if (selectedContainer) {
+            selectedContainer.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+          }
           
-          document.querySelectorAll('button[id^="btn"]').forEach(btn => btn.disabled = true);
-          document.getElementById(btnId).innerHTML = '✅ Selected';
-          document.getElementById(btnId).classList.add('selected');
+          document.querySelectorAll('button[id^="btn"]').forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+          });
+          
+          const selectedBtn = document.getElementById(btnId);
+          if (selectedBtn) {
+            selectedBtn.innerHTML = '✓ Selected';
+            selectedBtn.classList.remove('bg-primary', 'hover:bg-blue-700');
+            selectedBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+          }
           
           // Send selection
           if (ws && ws.readyState === WebSocket.OPEN) {
@@ -1164,14 +1030,18 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
               // Re-enable UI
               document.querySelectorAll('button[id^="btn"]').forEach(btn => {
                 btn.disabled = false;
-                btn.innerHTML = 'Select This Design';
-                btn.classList.remove('selected');
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (btn.id === btnId) {
+                  btn.innerHTML = 'Select Design';
+                  btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                  btn.classList.add('bg-primary', 'hover:bg-blue-700');
+                }
               });
             });
           }
         }
         
-        // Enhanced keyboard shortcuts
+        // Keyboard shortcuts
         document.addEventListener('keydown', function(event) {
           if (event.key >= '1' && event.key <= '3') {
             const index = parseInt(event.key);
@@ -1180,31 +1050,19 @@ export function generateDesignSelectionHTML(input: DesignInput): string {
               btn.click();
             }
           } else if (event.key === 'Escape') {
-            closeZoom();
+            const modal = document.getElementById('fullSizeModal');
+            if (modal.classList.contains('active')) {
+              closeFullSize();
+            } else {
+              document.querySelectorAll('.code-view').forEach(cv => {
+                cv.classList.remove('active');
+                const previewId = cv.id.replace('codeView', 'preview-');
+                const preview = document.getElementById(previewId);
+                if (preview) preview.style.display = 'block';
+              });
+            }
           }
         });
-        
-        // Zoom functionality with framework preservation
-        document.querySelectorAll('.design-container').forEach(container => {
-          container.addEventListener('click', function(event) {
-            if (event.target.closest('button') || event.target.closest('.code-view')) {
-              return;
-            }
-            
-            const zoomOverlay = document.getElementById('zoomOverlay');
-            const zoomContent = document.getElementById('zoomContentInner');
-            const designContent = container.querySelector('.design-content');
-            
-            zoomContent.innerHTML = designContent.innerHTML;
-            zoomOverlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-          });
-        });
-        
-        function closeZoom() {
-          document.getElementById('zoomOverlay').style.display = 'none';
-          document.body.style.overflow = '';
-        }
         
         ${styleInjectionScript}
         
