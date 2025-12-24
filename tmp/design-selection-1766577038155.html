@@ -7,11 +7,11 @@
       <title>UI Component Selection</title>
       
       <!-- Framework Detection Meta -->
-      <meta name="detected-frameworks" content="tailwind,bootstrap">
+      <meta name="detected-frameworks" content="">
       
       <!-- External Framework Links (if needed) -->
-      <script src="https://cdn.tailwindcss.com"></script>
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      
+      
       
       
       
@@ -32,24 +32,62 @@
         
         /* Framework Compatibility Styles */
         
-      /* Tailwind compatibility styles */
-      .design-content [class*="bg-"], 
-      .design-content [class*="text-"],
-      .design-content [class*="border-"] {
-        /* Preserve Tailwind classes */
-      }
-    
-      /* Bootstrap compatibility styles */
-      .design-content .btn,
-      .design-content .card,
-      .design-content .container,
-      .design-content [class*="col-"] {
-        /* Preserve Bootstrap classes */
-      }
-    
         
         /* Layout-Specific Styles */
         
+      /* Gallery Layout: Large Components */
+      .designs-container.gallery-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 40px;
+        padding: 0 15px;
+      }
+      
+      .design-container.gallery-layout {
+        padding: 15px;
+        margin-bottom: 0;
+        min-height: 350px;
+        border-radius: 12px;
+      }
+      
+      .design-content.gallery-layout {
+        min-height: 200px;
+        max-height: 250px;
+        overflow: hidden;
+        position: relative;
+      }
+      
+      .design-content.gallery-layout::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: linear-gradient(transparent, rgba(255,255,255,0.9));
+        pointer-events: none;
+      }
+      
+      .design-name.gallery-layout {
+        font-size: 18px;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+      }
+      
+      .buttons-container.gallery-layout {
+        margin-top: 15px;
+        padding: 10px;
+      }
+      
+      .buttons-container.gallery-layout button {
+        padding: 12px 24px;
+        font-size: 14px;
+        min-height: 44px;
+        min-width: 140px;
+      }
+    
         
         /* Component Isolation Styles */
         .design-content {
@@ -522,16 +560,7 @@
           box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
         }
         
-        /* Extracted styles for each design */
-        <style id="design-1-styles">
-          
-        </style>
-        <style id="design-2-styles">
-          
-        </style>
-        <style id="design-3-styles">
-          
-        </style>
+        /* Extracted styles for each design - will be injected dynamically */
       </style>
     </head>
     <body>
@@ -544,174 +573,165 @@
       
       <div class="instructions">
         <p><strong>Choose your preferred component design.</strong> Each design is isolated and framework-compatible. 
-        Detected frameworks: <strong>tailwind, bootstrap</strong>
-        
+        No frameworks detected - vanilla CSS/HTML
+        <br><em>Using gallery layout for optimal large component viewing.</em>
         </p>
       </div>
       
-      <div class="designs-container card-layout">
-        <div class="design-container card-layout" data-design="Tailwind Button" data-index="1" data-layout="card">
-          <div class="design-name card-layout">
-            Tailwind Button
+      <div class="designs-container gallery-layout">
+        <div class="design-container gallery-layout" data-design="Bella Vista - Hero Section" data-index="1" data-layout="gallery">
+          <div class="design-name gallery-layout">
+            Bella Vista - Hero Section
             <span class="keyboard-hint">Press 1</span>
           </div>
           
           <div class="framework-badges">
-            <span class="framework-badge tailwind">tailwind</span>
-            <span class="layout-badge card">📝 Card</span>
+            <span class="framework-badge vanilla">Vanilla CSS</span>
+            <span class="layout-badge gallery">🖼️ Gallery</span>
           </div>
           
-          <div class="design-content card-layout" data-framework="tailwind" data-index="1">
+          <div class="design-content gallery-layout" data-framework="" data-index="1">
             <button class="code-toggle" onclick="toggleCode(event, 1)">View Code</button>
             
-    <div class="design-component-1" data-framework="tailwind" data-isolation="true">
+    <div class="design-component-1" data-framework="" data-isolation="true">
       <style scoped>
         
-      .design-component-1 {
-        /* Reset any inherited Tailwind styles */
-        all: initial;
-        font-family: inherit;
-        color: inherit;
-        display: block;
-      }
-      .design-component-1 * {
-        box-sizing: border-box;
-      }
-    
       </style>
-      
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-        Click me
-      </button>
-    
+      <section style="height: 100vh; background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: white;">
+  <div>
+    <h1 style="font-size: 4rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">Bella Vista Restaurant</h1>
+    <p style="font-size: 1.5rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);">Experience Authentic Italian Cuisine in the Heart of the City</p>
+    <a href="#menu" style="display: inline-block; background: #d4af37; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 1.1rem; transition: all 0.3s ease;">View Our Menu</a>
+  </div>
+</section>
     </div>
   
             <div class="code-view" id="codeView1">
-              <button class="copy-button" onclick="copyCode(event, 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwY2xhc3MlM0QlMjJiZy1ibHVlLTUwMCUyMGhvdmVyJTNBYmctYmx1ZS03MDAlMjB0ZXh0LXdoaXRlJTIwZm9udC1ib2xkJTIwcHktMiUyMHB4LTQlMjByb3VuZGVkJTIyJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwQ2xpY2slMjBtZSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQyUyRmJ1dHRvbiUzRSUwQSUyMCUyMCUyMCUyMA')">Copy HTML</button>
-              <pre><code>
-      &lt;button class=&quot;bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded&quot;&gt;
-        Click me
-      &lt;/button&gt;
-    </code></pre>
+              <button class="copy-button" onclick="copyCode(event, 'JTNDc2VjdGlvbiUyMHN0eWxlJTNEJTIyaGVpZ2h0JTNBJTIwMTAwdmglM0IlMjBiYWNrZ3JvdW5kJTNBJTIwbGluZWFyLWdyYWRpZW50KHJnYmEoMCUyQyUyMDAlMkMlMjAwJTJDJTIwMC41KSUyQyUyMHJnYmEoMCUyQyUyMDAlMkMlMjAwJTJDJTIwMC41KSklMkMlMjB1cmwoJ2h0dHBzJTNBJTJGJTJGaW1hZ2VzLnVuc3BsYXNoLmNvbSUyRnBob3RvLTE1MTcyNDgxMzU0NjctNGM3ZWRjYWQzNGM0JTNGaXhsaWIlM0RyYi00LjAuMyUyNmF1dG8lM0Rmb3JtYXQlMjZmaXQlM0Rjcm9wJTI2dyUzRDIwNzAlMjZxJTNEODAnKSUzQiUyMGJhY2tncm91bmQtc2l6ZSUzQSUyMGNvdmVyJTNCJTIwYmFja2dyb3VuZC1wb3NpdGlvbiUzQSUyMGNlbnRlciUzQiUyMGRpc3BsYXklM0ElMjBmbGV4JTNCJTIwYWxpZ24taXRlbXMlM0ElMjBjZW50ZXIlM0IlMjBqdXN0aWZ5LWNvbnRlbnQlM0ElMjBjZW50ZXIlM0IlMjB0ZXh0LWFsaWduJTNBJTIwY2VudGVyJTNCJTIwY29sb3IlM0ElMjB3aGl0ZSUzQiUyMiUzRSUwQSUyMCUyMCUzQ2RpdiUzRSUwQSUyMCUyMCUyMCUyMCUzQ2gxJTIwc3R5bGUlM0QlMjJmb250LXNpemUlM0ElMjA0cmVtJTNCJTIwbWFyZ2luLWJvdHRvbSUzQSUyMDFyZW0lM0IlMjB0ZXh0LXNoYWRvdyUzQSUyMDJweCUyMDJweCUyMDRweCUyMHJnYmEoMCUyQyUyMDAlMkMlMjAwJTJDJTIwMC44KSUzQiUyMiUzRUJlbGxhJTIwVmlzdGElMjBSZXN0YXVyYW50JTNDJTJGaDElM0UlMEElMjAlMjAlMjAlMjAlM0NwJTIwc3R5bGUlM0QlMjJmb250LXNpemUlM0ElMjAxLjVyZW0lM0IlMjBtYXJnaW4tYm90dG9tJTNBJTIwMnJlbSUzQiUyMHRleHQtc2hhZG93JTNBJTIwMXB4JTIwMXB4JTIwMnB4JTIwcmdiYSgwJTJDJTIwMCUyQyUyMDAlMkMlMjAwLjgpJTNCJTIyJTNFRXhwZXJpZW5jZSUyMEF1dGhlbnRpYyUyMEl0YWxpYW4lMjBDdWlzaW5lJTIwaW4lMjB0aGUlMjBIZWFydCUyMG9mJTIwdGhlJTIwQ2l0eSUzQyUyRnAlM0UlMEElMjAlMjAlMjAlMjAlM0NhJTIwaHJlZiUzRCUyMiUyM21lbnUlMjIlMjBzdHlsZSUzRCUyMmRpc3BsYXklM0ElMjBpbmxpbmUtYmxvY2slM0IlMjBiYWNrZ3JvdW5kJTNBJTIwJTIzZDRhZjM3JTNCJTIwY29sb3IlM0ElMjB3aGl0ZSUzQiUyMHBhZGRpbmclM0ElMjAxNXB4JTIwMzBweCUzQiUyMHRleHQtZGVjb3JhdGlvbiUzQSUyMG5vbmUlM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwNXB4JTNCJTIwZm9udC1zaXplJTNBJTIwMS4xcmVtJTNCJTIwdHJhbnNpdGlvbiUzQSUyMGFsbCUyMDAuM3MlMjBlYXNlJTNCJTIyJTNFVmlldyUyME91ciUyME1lbnUlM0MlMkZhJTNFJTBBJTIwJTIwJTNDJTJGZGl2JTNFJTBBJTNDJTJGc2VjdGlvbiUzRQ')">Copy HTML</button>
+              <pre><code>&lt;section style=&quot;height: 100vh; background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(&#39;https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=2070&amp;q=80&#39;); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: white;&quot;&gt;
+  &lt;div&gt;
+    &lt;h1 style=&quot;font-size: 4rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);&quot;&gt;Bella Vista Restaurant&lt;/h1&gt;
+    &lt;p style=&quot;font-size: 1.5rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);&quot;&gt;Experience Authentic Italian Cuisine in the Heart of the City&lt;/p&gt;
+    &lt;a href=&quot;#menu&quot; style=&quot;display: inline-block; background: #d4af37; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 1.1rem; transition: all 0.3s ease;&quot;&gt;View Our Menu&lt;/a&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
             </div>
           </div>
           
-          <div class="buttons-container card-layout">
-            <button id="btn1" onclick="selectDesign('Tailwind Button', 'btn1', 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwY2xhc3MlM0QlMjJiZy1ibHVlLTUwMCUyMGhvdmVyJTNBYmctYmx1ZS03MDAlMjB0ZXh0LXdoaXRlJTIwZm9udC1ib2xkJTIwcHktMiUyMHB4LTQlMjByb3VuZGVkJTIyJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwQ2xpY2slMjBtZSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQyUyRmJ1dHRvbiUzRSUwQSUyMCUyMCUyMCUyMA')">
+          <div class="buttons-container gallery-layout">
+            <button id="btn1" onclick="selectDesign('Bella Vista - Hero Section', 'btn1', 'JTNDc2VjdGlvbiUyMHN0eWxlJTNEJTIyaGVpZ2h0JTNBJTIwMTAwdmglM0IlMjBiYWNrZ3JvdW5kJTNBJTIwbGluZWFyLWdyYWRpZW50KHJnYmEoMCUyQyUyMDAlMkMlMjAwJTJDJTIwMC41KSUyQyUyMHJnYmEoMCUyQyUyMDAlMkMlMjAwJTJDJTIwMC41KSklMkMlMjB1cmwoJ2h0dHBzJTNBJTJGJTJGaW1hZ2VzLnVuc3BsYXNoLmNvbSUyRnBob3RvLTE1MTcyNDgxMzU0NjctNGM3ZWRjYWQzNGM0JTNGaXhsaWIlM0RyYi00LjAuMyUyNmF1dG8lM0Rmb3JtYXQlMjZmaXQlM0Rjcm9wJTI2dyUzRDIwNzAlMjZxJTNEODAnKSUzQiUyMGJhY2tncm91bmQtc2l6ZSUzQSUyMGNvdmVyJTNCJTIwYmFja2dyb3VuZC1wb3NpdGlvbiUzQSUyMGNlbnRlciUzQiUyMGRpc3BsYXklM0ElMjBmbGV4JTNCJTIwYWxpZ24taXRlbXMlM0ElMjBjZW50ZXIlM0IlMjBqdXN0aWZ5LWNvbnRlbnQlM0ElMjBjZW50ZXIlM0IlMjB0ZXh0LWFsaWduJTNBJTIwY2VudGVyJTNCJTIwY29sb3IlM0ElMjB3aGl0ZSUzQiUyMiUzRSUwQSUyMCUyMCUzQ2RpdiUzRSUwQSUyMCUyMCUyMCUyMCUzQ2gxJTIwc3R5bGUlM0QlMjJmb250LXNpemUlM0ElMjA0cmVtJTNCJTIwbWFyZ2luLWJvdHRvbSUzQSUyMDFyZW0lM0IlMjB0ZXh0LXNoYWRvdyUzQSUyMDJweCUyMDJweCUyMDRweCUyMHJnYmEoMCUyQyUyMDAlMkMlMjAwJTJDJTIwMC44KSUzQiUyMiUzRUJlbGxhJTIwVmlzdGElMjBSZXN0YXVyYW50JTNDJTJGaDElM0UlMEElMjAlMjAlMjAlMjAlM0NwJTIwc3R5bGUlM0QlMjJmb250LXNpemUlM0ElMjAxLjVyZW0lM0IlMjBtYXJnaW4tYm90dG9tJTNBJTIwMnJlbSUzQiUyMHRleHQtc2hhZG93JTNBJTIwMXB4JTIwMXB4JTIwMnB4JTIwcmdiYSgwJTJDJTIwMCUyQyUyMDAlMkMlMjAwLjgpJTNCJTIyJTNFRXhwZXJpZW5jZSUyMEF1dGhlbnRpYyUyMEl0YWxpYW4lMjBDdWlzaW5lJTIwaW4lMjB0aGUlMjBIZWFydCUyMG9mJTIwdGhlJTIwQ2l0eSUzQyUyRnAlM0UlMEElMjAlMjAlMjAlMjAlM0NhJTIwaHJlZiUzRCUyMiUyM21lbnUlMjIlMjBzdHlsZSUzRCUyMmRpc3BsYXklM0ElMjBpbmxpbmUtYmxvY2slM0IlMjBiYWNrZ3JvdW5kJTNBJTIwJTIzZDRhZjM3JTNCJTIwY29sb3IlM0ElMjB3aGl0ZSUzQiUyMHBhZGRpbmclM0ElMjAxNXB4JTIwMzBweCUzQiUyMHRleHQtZGVjb3JhdGlvbiUzQSUyMG5vbmUlM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwNXB4JTNCJTIwZm9udC1zaXplJTNBJTIwMS4xcmVtJTNCJTIwdHJhbnNpdGlvbiUzQSUyMGFsbCUyMDAuM3MlMjBlYXNlJTNCJTIyJTNFVmlldyUyME91ciUyME1lbnUlM0MlMkZhJTNFJTBBJTIwJTIwJTNDJTJGZGl2JTNFJTBBJTNDJTJGc2VjdGlvbiUzRQ')">
               Select This Design
             </button>
           </div>
         </div>
 
-        <div class="design-container card-layout" data-design="CSS Button" data-index="2" data-layout="card">
-          <div class="design-name card-layout">
-            CSS Button
+        <div class="design-container gallery-layout" data-design="Bella Vista - Menu Item Card" data-index="2" data-layout="gallery">
+          <div class="design-name gallery-layout">
+            Bella Vista - Menu Item Card
             <span class="keyboard-hint">Press 2</span>
           </div>
           
           <div class="framework-badges">
             <span class="framework-badge vanilla">Vanilla CSS</span>
-            <span class="layout-badge card">📝 Card</span>
+            <span class="layout-badge gallery">🖼️ Gallery</span>
           </div>
           
-          <div class="design-content card-layout" data-framework="" data-index="2">
+          <div class="design-content gallery-layout" data-framework="" data-index="2">
             <button class="code-toggle" onclick="toggleCode(event, 2)">View Code</button>
             
     <div class="design-component-2" data-framework="" data-isolation="true">
       <style scoped>
         
       </style>
-      
-      <button style="
-        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 25px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        transition: transform 0.2s;
-      " 
-      onmouseover="this.style.transform='translateY(-2px)'"
-      onmouseout="this.style.transform='translateY(0)'">
-        Click me
-      </button>
-    
+      <div style="background: #f8f8f8; padding: 2rem; border-radius: 10px; text-align: center; transition: transform 0.3s ease;">
+  <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=1000&q=80" alt="Margherita Pizza" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
+  <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #333;">Margherita Pizza</h3>
+  <p style="color: #666; margin-bottom: 1rem;">Fresh mozzarella, San Marzano tomatoes, fresh basil, extra virgin olive oil</p>
+  <div style="font-size: 1.3rem; font-weight: bold; color: #d4af37;">$18</div>
+</div>
     </div>
   
             <div class="code-view" id="codeView2">
-              <button class="copy-button" onclick="copyCode(event, 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwc3R5bGUlM0QlMjIlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBiYWNrZ3JvdW5kJTNBJTIwbGluZWFyLWdyYWRpZW50KDQ1ZGVnJTJDJTIwJTIzNjY3ZWVhJTIwMCUyNSUyQyUyMCUyMzc2NGJhMiUyMDEwMCUyNSklM0IlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBjb2xvciUzQSUyMHdoaXRlJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwYm9yZGVyJTNBJTIwbm9uZSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHBhZGRpbmclM0ElMjAxMnB4JTIwMjRweCUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJvcmRlci1yYWRpdXMlM0ElMjAyNXB4JTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwZm9udC13ZWlnaHQlM0ElMjBib2xkJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwY3Vyc29yJTNBJTIwcG9pbnRlciUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJveC1zaGFkb3clM0ElMjAwJTIwNHB4JTIwMTVweCUyMHJnYmEoMCUyQzAlMkMwJTJDMC4yKSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHRyYW5zaXRpb24lM0ElMjB0cmFuc2Zvcm0lMjAwLjJzJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIyJTIwJTBBJTIwJTIwJTIwJTIwJTIwJTIwb25tb3VzZW92ZXIlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKC0ycHgpJyUyMiUwQSUyMCUyMCUyMCUyMCUyMCUyMG9ubW91c2VvdXQlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKDApJyUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMENsaWNrJTIwbWUlMEElMjAlMjAlMjAlMjAlMjAlMjAlM0MlMkZidXR0b24lM0UlMEElMjAlMjAlMjAlMjA')">Copy HTML</button>
-              <pre><code>
-      &lt;button style=&quot;
-        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 25px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        transition: transform 0.2s;
-      &quot; 
-      onmouseover=&quot;this.style.transform=&#39;translateY(-2px)&#39;&quot;
-      onmouseout=&quot;this.style.transform=&#39;translateY(0)&#39;&quot;&gt;
-        Click me
-      &lt;/button&gt;
-    </code></pre>
+              <button class="copy-button" onclick="copyCode(event, 'JTNDZGl2JTIwc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJTNBJTIwJTIzZjhmOGY4JTNCJTIwcGFkZGluZyUzQSUyMDJyZW0lM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwMTBweCUzQiUyMHRleHQtYWxpZ24lM0ElMjBjZW50ZXIlM0IlMjB0cmFuc2l0aW9uJTNBJTIwdHJhbnNmb3JtJTIwMC4zcyUyMGVhc2UlM0IlMjIlM0UlMEElMjAlMjAlM0NpbWclMjBzcmMlM0QlMjJodHRwcyUzQSUyRiUyRmltYWdlcy51bnNwbGFzaC5jb20lMkZwaG90by0xNTY1Mjk5NjI0OTQ2LWIyOGY0MGEwY2E0YiUzRmF1dG8lM0Rmb3JtYXQlMjZmaXQlM0Rjcm9wJTI2dyUzRDEwMDAlMjZxJTNEODAlMjIlMjBhbHQlM0QlMjJNYXJnaGVyaXRhJTIwUGl6emElMjIlMjBzdHlsZSUzRCUyMndpZHRoJTNBJTIwMTAwJTI1JTNCJTIwaGVpZ2h0JTNBJTIwMjAwcHglM0IlMjBvYmplY3QtZml0JTNBJTIwY292ZXIlM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwMTBweCUzQiUyMG1hcmdpbi1ib3R0b20lM0ElMjAxcmVtJTNCJTIyJTNFJTBBJTIwJTIwJTNDaDMlMjBzdHlsZSUzRCUyMmZvbnQtc2l6ZSUzQSUyMDEuNXJlbSUzQiUyMG1hcmdpbi1ib3R0b20lM0ElMjAxcmVtJTNCJTIwY29sb3IlM0ElMjAlMjMzMzMlM0IlMjIlM0VNYXJnaGVyaXRhJTIwUGl6emElM0MlMkZoMyUzRSUwQSUyMCUyMCUzQ3AlMjBzdHlsZSUzRCUyMmNvbG9yJTNBJTIwJTIzNjY2JTNCJTIwbWFyZ2luLWJvdHRvbSUzQSUyMDFyZW0lM0IlMjIlM0VGcmVzaCUyMG1venphcmVsbGElMkMlMjBTYW4lMjBNYXJ6YW5vJTIwdG9tYXRvZXMlMkMlMjBmcmVzaCUyMGJhc2lsJTJDJTIwZXh0cmElMjB2aXJnaW4lMjBvbGl2ZSUyMG9pbCUzQyUyRnAlM0UlMEElMjAlMjAlM0NkaXYlMjBzdHlsZSUzRCUyMmZvbnQtc2l6ZSUzQSUyMDEuM3JlbSUzQiUyMGZvbnQtd2VpZ2h0JTNBJTIwYm9sZCUzQiUyMGNvbG9yJTNBJTIwJTIzZDRhZjM3JTNCJTIyJTNFJTI0MTglM0MlMkZkaXYlM0UlMEElM0MlMkZkaXYlM0U')">Copy HTML</button>
+              <pre><code>&lt;div style=&quot;background: #f8f8f8; padding: 2rem; border-radius: 10px; text-align: center; transition: transform 0.3s ease;&quot;&gt;
+  &lt;img src=&quot;https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&amp;fit=crop&amp;w=1000&amp;q=80&quot; alt=&quot;Margherita Pizza&quot; style=&quot;width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;&quot;&gt;
+  &lt;h3 style=&quot;font-size: 1.5rem; margin-bottom: 1rem; color: #333;&quot;&gt;Margherita Pizza&lt;/h3&gt;
+  &lt;p style=&quot;color: #666; margin-bottom: 1rem;&quot;&gt;Fresh mozzarella, San Marzano tomatoes, fresh basil, extra virgin olive oil&lt;/p&gt;
+  &lt;div style=&quot;font-size: 1.3rem; font-weight: bold; color: #d4af37;&quot;&gt;$18&lt;/div&gt;
+&lt;/div&gt;</code></pre>
             </div>
           </div>
           
-          <div class="buttons-container card-layout">
-            <button id="btn2" onclick="selectDesign('CSS Button', 'btn2', 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwc3R5bGUlM0QlMjIlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBiYWNrZ3JvdW5kJTNBJTIwbGluZWFyLWdyYWRpZW50KDQ1ZGVnJTJDJTIwJTIzNjY3ZWVhJTIwMCUyNSUyQyUyMCUyMzc2NGJhMiUyMDEwMCUyNSklM0IlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBjb2xvciUzQSUyMHdoaXRlJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwYm9yZGVyJTNBJTIwbm9uZSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHBhZGRpbmclM0ElMjAxMnB4JTIwMjRweCUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJvcmRlci1yYWRpdXMlM0ElMjAyNXB4JTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwZm9udC13ZWlnaHQlM0ElMjBib2xkJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIwJTIwY3Vyc29yJTNBJTIwcG9pbnRlciUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMGJveC1zaGFkb3clM0ElMjAwJTIwNHB4JTIwMTVweCUyMHJnYmEoMCUyQzAlMkMwJTJDMC4yKSUzQiUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMHRyYW5zaXRpb24lM0ElMjB0cmFuc2Zvcm0lMjAwLjJzJTNCJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTIyJTIwJTBBJTIwJTIwJTIwJTIwJTIwJTIwb25tb3VzZW92ZXIlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKC0ycHgpJyUyMiUwQSUyMCUyMCUyMCUyMCUyMCUyMG9ubW91c2VvdXQlM0QlMjJ0aGlzLnN0eWxlLnRyYW5zZm9ybSUzRCd0cmFuc2xhdGVZKDApJyUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUyMCUyMENsaWNrJTIwbWUlMEElMjAlMjAlMjAlMjAlMjAlMjAlM0MlMkZidXR0b24lM0UlMEElMjAlMjAlMjAlMjA')">
+          <div class="buttons-container gallery-layout">
+            <button id="btn2" onclick="selectDesign('Bella Vista - Menu Item Card', 'btn2', 'JTNDZGl2JTIwc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJTNBJTIwJTIzZjhmOGY4JTNCJTIwcGFkZGluZyUzQSUyMDJyZW0lM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwMTBweCUzQiUyMHRleHQtYWxpZ24lM0ElMjBjZW50ZXIlM0IlMjB0cmFuc2l0aW9uJTNBJTIwdHJhbnNmb3JtJTIwMC4zcyUyMGVhc2UlM0IlMjIlM0UlMEElMjAlMjAlM0NpbWclMjBzcmMlM0QlMjJodHRwcyUzQSUyRiUyRmltYWdlcy51bnNwbGFzaC5jb20lMkZwaG90by0xNTY1Mjk5NjI0OTQ2LWIyOGY0MGEwY2E0YiUzRmF1dG8lM0Rmb3JtYXQlMjZmaXQlM0Rjcm9wJTI2dyUzRDEwMDAlMjZxJTNEODAlMjIlMjBhbHQlM0QlMjJNYXJnaGVyaXRhJTIwUGl6emElMjIlMjBzdHlsZSUzRCUyMndpZHRoJTNBJTIwMTAwJTI1JTNCJTIwaGVpZ2h0JTNBJTIwMjAwcHglM0IlMjBvYmplY3QtZml0JTNBJTIwY292ZXIlM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwMTBweCUzQiUyMG1hcmdpbi1ib3R0b20lM0ElMjAxcmVtJTNCJTIyJTNFJTBBJTIwJTIwJTNDaDMlMjBzdHlsZSUzRCUyMmZvbnQtc2l6ZSUzQSUyMDEuNXJlbSUzQiUyMG1hcmdpbi1ib3R0b20lM0ElMjAxcmVtJTNCJTIwY29sb3IlM0ElMjAlMjMzMzMlM0IlMjIlM0VNYXJnaGVyaXRhJTIwUGl6emElM0MlMkZoMyUzRSUwQSUyMCUyMCUzQ3AlMjBzdHlsZSUzRCUyMmNvbG9yJTNBJTIwJTIzNjY2JTNCJTIwbWFyZ2luLWJvdHRvbSUzQSUyMDFyZW0lM0IlMjIlM0VGcmVzaCUyMG1venphcmVsbGElMkMlMjBTYW4lMjBNYXJ6YW5vJTIwdG9tYXRvZXMlMkMlMjBmcmVzaCUyMGJhc2lsJTJDJTIwZXh0cmElMjB2aXJnaW4lMjBvbGl2ZSUyMG9pbCUzQyUyRnAlM0UlMEElMjAlMjAlM0NkaXYlMjBzdHlsZSUzRCUyMmZvbnQtc2l6ZSUzQSUyMDEuM3JlbSUzQiUyMGZvbnQtd2VpZ2h0JTNBJTIwYm9sZCUzQiUyMGNvbG9yJTNBJTIwJTIzZDRhZjM3JTNCJTIyJTNFJTI0MTglM0MlMkZkaXYlM0UlMEElM0MlMkZkaXYlM0U')">
               Select This Design
             </button>
           </div>
         </div>
 
-        <div class="design-container card-layout" data-design="Bootstrap Button" data-index="3" data-layout="card">
-          <div class="design-name card-layout">
-            Bootstrap Button
+        <div class="design-container gallery-layout" data-design="Bella Vista - Reservation Form" data-index="3" data-layout="gallery">
+          <div class="design-name gallery-layout">
+            Bella Vista - Reservation Form
             <span class="keyboard-hint">Press 3</span>
           </div>
           
           <div class="framework-badges">
-            <span class="framework-badge bootstrap">bootstrap</span>
-            <span class="layout-badge card">📝 Card</span>
+            <span class="framework-badge vanilla">Vanilla CSS</span>
+            <span class="layout-badge gallery">🖼️ Gallery</span>
           </div>
           
-          <div class="design-content card-layout" data-framework="bootstrap" data-index="3">
+          <div class="design-content gallery-layout" data-framework="" data-index="3">
             <button class="code-toggle" onclick="toggleCode(event, 3)">View Code</button>
             
-    <div class="design-component-3" data-framework="bootstrap" data-isolation="true">
+    <div class="design-component-3" data-framework="" data-isolation="true">
       <style scoped>
         
-      .design-component-3 {
-        /* Ensure Bootstrap compatibility */
-        width: 100%;
-        display: block;
-      }
-    
       </style>
-      
-      <button type="button" class="btn btn-primary btn-lg">
-        Click me
-      </button>
-    
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 10px;">
+  <h3 style="margin-bottom: 1.5rem; color: #d4af37;">Make a Reservation</h3>
+  <form>
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: block; margin-bottom: 0.5rem; color: #d4af37;">Name</label>
+      <input type="text" style="width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);" required>
+    </div>
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: block; margin-bottom: 0.5rem; color: #d4af37;">Email</label>
+      <input type="email" style="width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);" required>
+    </div>
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: block; margin-bottom: 0.5rem; color: #d4af37;">Phone</label>
+      <input type="tel" style="width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);" required>
+    </div>
+    <button type="submit" style="background: #d4af37; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">Request Reservation</button>
+  </form>
+</div>
     </div>
   
             <div class="code-view" id="codeView3">
-              <button class="copy-button" onclick="copyCode(event, 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwdHlwZSUzRCUyMmJ1dHRvbiUyMiUyMGNsYXNzJTNEJTIyYnRuJTIwYnRuLXByaW1hcnklMjBidG4tbGclMjIlM0UlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBDbGljayUyMG1lJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDJTJGYnV0dG9uJTNFJTBBJTIwJTIwJTIwJTIw')">Copy HTML</button>
-              <pre><code>
-      &lt;button type=&quot;button&quot; class=&quot;btn btn-primary btn-lg&quot;&gt;
-        Click me
-      &lt;/button&gt;
-    </code></pre>
+              <button class="copy-button" onclick="copyCode(event, 'JTNDZGl2JTIwc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJTNBJTIwcmdiYSgyNTUlMkMlMjAyNTUlMkMlMjAyNTUlMkMlMjAwLjEpJTNCJTIwcGFkZGluZyUzQSUyMDJyZW0lM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwMTBweCUzQiUyMiUzRSUwQSUyMCUyMCUzQ2gzJTIwc3R5bGUlM0QlMjJtYXJnaW4tYm90dG9tJTNBJTIwMS41cmVtJTNCJTIwY29sb3IlM0ElMjAlMjNkNGFmMzclM0IlMjIlM0VNYWtlJTIwYSUyMFJlc2VydmF0aW9uJTNDJTJGaDMlM0UlMEElMjAlMjAlM0Nmb3JtJTNFJTBBJTIwJTIwJTIwJTIwJTNDZGl2JTIwc3R5bGUlM0QlMjJtYXJnaW4tYm90dG9tJTNBJTIwMS41cmVtJTNCJTIyJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDbGFiZWwlMjBzdHlsZSUzRCUyMmRpc3BsYXklM0ElMjBibG9jayUzQiUyMG1hcmdpbi1ib3R0b20lM0ElMjAwLjVyZW0lM0IlMjBjb2xvciUzQSUyMCUyM2Q0YWYzNyUzQiUyMiUzRU5hbWUlM0MlMkZsYWJlbCUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQ2lucHV0JTIwdHlwZSUzRCUyMnRleHQlMjIlMjBzdHlsZSUzRCUyMndpZHRoJTNBJTIwMTAwJTI1JTNCJTIwcGFkZGluZyUzQSUyMDEwcHglM0IlMjBib3JkZXIlM0ElMjBub25lJTNCJTIwYm9yZGVyLXJhZGl1cyUzQSUyMDVweCUzQiUyMGJhY2tncm91bmQlM0ElMjByZ2JhKDI1NSUyQyUyMDI1NSUyQyUyMDI1NSUyQyUyMDAuOSklM0IlMjIlMjByZXF1aXJlZCUzRSUwQSUyMCUyMCUyMCUyMCUzQyUyRmRpdiUzRSUwQSUyMCUyMCUyMCUyMCUzQ2RpdiUyMHN0eWxlJTNEJTIybWFyZ2luLWJvdHRvbSUzQSUyMDEuNXJlbSUzQiUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQ2xhYmVsJTIwc3R5bGUlM0QlMjJkaXNwbGF5JTNBJTIwYmxvY2slM0IlMjBtYXJnaW4tYm90dG9tJTNBJTIwMC41cmVtJTNCJTIwY29sb3IlM0ElMjAlMjNkNGFmMzclM0IlMjIlM0VFbWFpbCUzQyUyRmxhYmVsJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDaW5wdXQlMjB0eXBlJTNEJTIyZW1haWwlMjIlMjBzdHlsZSUzRCUyMndpZHRoJTNBJTIwMTAwJTI1JTNCJTIwcGFkZGluZyUzQSUyMDEwcHglM0IlMjBib3JkZXIlM0ElMjBub25lJTNCJTIwYm9yZGVyLXJhZGl1cyUzQSUyMDVweCUzQiUyMGJhY2tncm91bmQlM0ElMjByZ2JhKDI1NSUyQyUyMDI1NSUyQyUyMDI1NSUyQyUyMDAuOSklM0IlMjIlMjByZXF1aXJlZCUzRSUwQSUyMCUyMCUyMCUyMCUzQyUyRmRpdiUzRSUwQSUyMCUyMCUyMCUyMCUzQ2RpdiUyMHN0eWxlJTNEJTIybWFyZ2luLWJvdHRvbSUzQSUyMDEuNXJlbSUzQiUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQ2xhYmVsJTIwc3R5bGUlM0QlMjJkaXNwbGF5JTNBJTIwYmxvY2slM0IlMjBtYXJnaW4tYm90dG9tJTNBJTIwMC41cmVtJTNCJTIwY29sb3IlM0ElMjAlMjNkNGFmMzclM0IlMjIlM0VQaG9uZSUzQyUyRmxhYmVsJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDaW5wdXQlMjB0eXBlJTNEJTIydGVsJTIyJTIwc3R5bGUlM0QlMjJ3aWR0aCUzQSUyMDEwMCUyNSUzQiUyMHBhZGRpbmclM0ElMjAxMHB4JTNCJTIwYm9yZGVyJTNBJTIwbm9uZSUzQiUyMGJvcmRlci1yYWRpdXMlM0ElMjA1cHglM0IlMjBiYWNrZ3JvdW5kJTNBJTIwcmdiYSgyNTUlMkMlMjAyNTUlMkMlMjAyNTUlMkMlMjAwLjkpJTNCJTIyJTIwcmVxdWlyZWQlM0UlMEElMjAlMjAlMjAlMjAlM0MlMkZkaXYlM0UlMEElMjAlMjAlMjAlMjAlM0NidXR0b24lMjB0eXBlJTNEJTIyc3VibWl0JTIyJTIwc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJTNBJTIwJTIzZDRhZjM3JTNCJTIwY29sb3IlM0ElMjB3aGl0ZSUzQiUyMHBhZGRpbmclM0ElMjAxNXB4JTIwMzBweCUzQiUyMGJvcmRlciUzQSUyMG5vbmUlM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwNXB4JTNCJTIwZm9udC1zaXplJTNBJTIwMS4xcmVtJTNCJTIwY3Vyc29yJTNBJTIwcG9pbnRlciUzQiUyMHRyYW5zaXRpb24lM0ElMjBhbGwlMjAwLjNzJTIwZWFzZSUzQiUyMiUzRVJlcXVlc3QlMjBSZXNlcnZhdGlvbiUzQyUyRmJ1dHRvbiUzRSUwQSUyMCUyMCUzQyUyRmZvcm0lM0UlMEElM0MlMkZkaXYlM0U')">Copy HTML</button>
+              <pre><code>&lt;div style=&quot;background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 10px;&quot;&gt;
+  &lt;h3 style=&quot;margin-bottom: 1.5rem; color: #d4af37;&quot;&gt;Make a Reservation&lt;/h3&gt;
+  &lt;form&gt;
+    &lt;div style=&quot;margin-bottom: 1.5rem;&quot;&gt;
+      &lt;label style=&quot;display: block; margin-bottom: 0.5rem; color: #d4af37;&quot;&gt;Name&lt;/label&gt;
+      &lt;input type=&quot;text&quot; style=&quot;width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);&quot; required&gt;
+    &lt;/div&gt;
+    &lt;div style=&quot;margin-bottom: 1.5rem;&quot;&gt;
+      &lt;label style=&quot;display: block; margin-bottom: 0.5rem; color: #d4af37;&quot;&gt;Email&lt;/label&gt;
+      &lt;input type=&quot;email&quot; style=&quot;width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);&quot; required&gt;
+    &lt;/div&gt;
+    &lt;div style=&quot;margin-bottom: 1.5rem;&quot;&gt;
+      &lt;label style=&quot;display: block; margin-bottom: 0.5rem; color: #d4af37;&quot;&gt;Phone&lt;/label&gt;
+      &lt;input type=&quot;tel&quot; style=&quot;width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);&quot; required&gt;
+    &lt;/div&gt;
+    &lt;button type=&quot;submit&quot; style=&quot;background: #d4af37; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;&quot;&gt;Request Reservation&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/div&gt;</code></pre>
             </div>
           </div>
           
-          <div class="buttons-container card-layout">
-            <button id="btn3" onclick="selectDesign('Bootstrap Button', 'btn3', 'JTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDYnV0dG9uJTIwdHlwZSUzRCUyMmJ1dHRvbiUyMiUyMGNsYXNzJTNEJTIyYnRuJTIwYnRuLXByaW1hcnklMjBidG4tbGclMjIlM0UlMEElMjAlMjAlMjAlMjAlMjAlMjAlMjAlMjBDbGljayUyMG1lJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDJTJGYnV0dG9uJTNFJTBBJTIwJTIwJTIwJTIw')">
+          <div class="buttons-container gallery-layout">
+            <button id="btn3" onclick="selectDesign('Bella Vista - Reservation Form', 'btn3', 'JTNDZGl2JTIwc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJTNBJTIwcmdiYSgyNTUlMkMlMjAyNTUlMkMlMjAyNTUlMkMlMjAwLjEpJTNCJTIwcGFkZGluZyUzQSUyMDJyZW0lM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwMTBweCUzQiUyMiUzRSUwQSUyMCUyMCUzQ2gzJTIwc3R5bGUlM0QlMjJtYXJnaW4tYm90dG9tJTNBJTIwMS41cmVtJTNCJTIwY29sb3IlM0ElMjAlMjNkNGFmMzclM0IlMjIlM0VNYWtlJTIwYSUyMFJlc2VydmF0aW9uJTNDJTJGaDMlM0UlMEElMjAlMjAlM0Nmb3JtJTNFJTBBJTIwJTIwJTIwJTIwJTNDZGl2JTIwc3R5bGUlM0QlMjJtYXJnaW4tYm90dG9tJTNBJTIwMS41cmVtJTNCJTIyJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDbGFiZWwlMjBzdHlsZSUzRCUyMmRpc3BsYXklM0ElMjBibG9jayUzQiUyMG1hcmdpbi1ib3R0b20lM0ElMjAwLjVyZW0lM0IlMjBjb2xvciUzQSUyMCUyM2Q0YWYzNyUzQiUyMiUzRU5hbWUlM0MlMkZsYWJlbCUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQ2lucHV0JTIwdHlwZSUzRCUyMnRleHQlMjIlMjBzdHlsZSUzRCUyMndpZHRoJTNBJTIwMTAwJTI1JTNCJTIwcGFkZGluZyUzQSUyMDEwcHglM0IlMjBib3JkZXIlM0ElMjBub25lJTNCJTIwYm9yZGVyLXJhZGl1cyUzQSUyMDVweCUzQiUyMGJhY2tncm91bmQlM0ElMjByZ2JhKDI1NSUyQyUyMDI1NSUyQyUyMDI1NSUyQyUyMDAuOSklM0IlMjIlMjByZXF1aXJlZCUzRSUwQSUyMCUyMCUyMCUyMCUzQyUyRmRpdiUzRSUwQSUyMCUyMCUyMCUyMCUzQ2RpdiUyMHN0eWxlJTNEJTIybWFyZ2luLWJvdHRvbSUzQSUyMDEuNXJlbSUzQiUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQ2xhYmVsJTIwc3R5bGUlM0QlMjJkaXNwbGF5JTNBJTIwYmxvY2slM0IlMjBtYXJnaW4tYm90dG9tJTNBJTIwMC41cmVtJTNCJTIwY29sb3IlM0ElMjAlMjNkNGFmMzclM0IlMjIlM0VFbWFpbCUzQyUyRmxhYmVsJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDaW5wdXQlMjB0eXBlJTNEJTIyZW1haWwlMjIlMjBzdHlsZSUzRCUyMndpZHRoJTNBJTIwMTAwJTI1JTNCJTIwcGFkZGluZyUzQSUyMDEwcHglM0IlMjBib3JkZXIlM0ElMjBub25lJTNCJTIwYm9yZGVyLXJhZGl1cyUzQSUyMDVweCUzQiUyMGJhY2tncm91bmQlM0ElMjByZ2JhKDI1NSUyQyUyMDI1NSUyQyUyMDI1NSUyQyUyMDAuOSklM0IlMjIlMjByZXF1aXJlZCUzRSUwQSUyMCUyMCUyMCUyMCUzQyUyRmRpdiUzRSUwQSUyMCUyMCUyMCUyMCUzQ2RpdiUyMHN0eWxlJTNEJTIybWFyZ2luLWJvdHRvbSUzQSUyMDEuNXJlbSUzQiUyMiUzRSUwQSUyMCUyMCUyMCUyMCUyMCUyMCUzQ2xhYmVsJTIwc3R5bGUlM0QlMjJkaXNwbGF5JTNBJTIwYmxvY2slM0IlMjBtYXJnaW4tYm90dG9tJTNBJTIwMC41cmVtJTNCJTIwY29sb3IlM0ElMjAlMjNkNGFmMzclM0IlMjIlM0VQaG9uZSUzQyUyRmxhYmVsJTNFJTBBJTIwJTIwJTIwJTIwJTIwJTIwJTNDaW5wdXQlMjB0eXBlJTNEJTIydGVsJTIyJTIwc3R5bGUlM0QlMjJ3aWR0aCUzQSUyMDEwMCUyNSUzQiUyMHBhZGRpbmclM0ElMjAxMHB4JTNCJTIwYm9yZGVyJTNBJTIwbm9uZSUzQiUyMGJvcmRlci1yYWRpdXMlM0ElMjA1cHglM0IlMjBiYWNrZ3JvdW5kJTNBJTIwcmdiYSgyNTUlMkMlMjAyNTUlMkMlMjAyNTUlMkMlMjAwLjkpJTNCJTIyJTIwcmVxdWlyZWQlM0UlMEElMjAlMjAlMjAlMjAlM0MlMkZkaXYlM0UlMEElMjAlMjAlMjAlMjAlM0NidXR0b24lMjB0eXBlJTNEJTIyc3VibWl0JTIyJTIwc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJTNBJTIwJTIzZDRhZjM3JTNCJTIwY29sb3IlM0ElMjB3aGl0ZSUzQiUyMHBhZGRpbmclM0ElMjAxNXB4JTIwMzBweCUzQiUyMGJvcmRlciUzQSUyMG5vbmUlM0IlMjBib3JkZXItcmFkaXVzJTNBJTIwNXB4JTNCJTIwZm9udC1zaXplJTNBJTIwMS4xcmVtJTNCJTIwY3Vyc29yJTNBJTIwcG9pbnRlciUzQiUyMHRyYW5zaXRpb24lM0ElMjBhbGwlMjAwLjNzJTIwZWFzZSUzQiUyMiUzRVJlcXVlc3QlMjBSZXNlcnZhdGlvbiUzQyUyRmJ1dHRvbiUzRSUwQSUyMCUyMCUzQyUyRmZvcm0lM0UlMEElM0MlMkZkaXYlM0U')">
               Select This Design
             </button>
           </div>
@@ -941,7 +961,25 @@
           document.body.style.overflow = '';
         }
         
+        
+        // Inject extracted styles dynamically
+        function injectDynamicStyles() {
+          const styles = [
+            { id: 'design-1-styles', css: "" },
+            { id: 'design-2-styles', css: "" },
+            { id: 'design-3-styles', css: "" }
+          ];
+          
+          styles.forEach(styleData => {
+            const styleEl = document.createElement('style');
+            styleEl.id = styleData.id;
+            styleEl.textContent = styleData.css;
+            document.head.appendChild(styleEl);
+          });
+        }
+        
         // Initialize
+        injectDynamicStyles();
         connectWebSocket();
         
         // Add success animation CSS
@@ -955,7 +993,7 @@
         `;
         document.head.appendChild(successStyle);
         
-        console.log('UI Component Selection initialized with frameworks:', 'tailwind, bootstrap');
+        console.log('UI Component Selection initialized with frameworks:', '');
       </script>
     </body>
     </html>

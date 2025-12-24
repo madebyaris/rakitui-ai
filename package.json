@@ -13,7 +13,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist/tools/* && tsc && mcp-build",
+    "build": "rm -rf dist/tools/* && tsc && node mcp-build.mjs",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
     "test": "node test-improved.js",

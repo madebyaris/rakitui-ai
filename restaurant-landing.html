@@ -3,366 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bella Vista Restaurant - Authentic Italian Cuisine</title>
+    <title>Bella Vista Restaurant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Georgia', serif;
-            line-height: 1.6;
-            color: #333;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Header */
-        header {
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 1rem 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #d4af37;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #d4af37;
-        }
-
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-                        url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: white;
-        }
-
-        .hero-content h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            animation: fadeInUp 1s ease;
-        }
-
-        .hero-content p {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            animation: fadeInUp 1s ease 0.3s both;
-        }
-
-        .btn {
-            display: inline-block;
-            background: #d4af37;
-            color: white;
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            animation: fadeInUp 1s ease 0.6s both;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #b8941f;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-        }
-
-        /* About Section */
-        .about {
-            padding: 100px 0;
-            background: #f8f8f8;
-        }
-
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .about-text h2 {
-            font-size: 3rem;
-            margin-bottom: 2rem;
-            color: #d4af37;
-        }
-
-        .about-text p {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            color: #666;
-        }
-
-        .about-image {
-            text-align: center;
-        }
-
-        .about-image img {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Menu Section */
-        .menu {
-            padding: 100px 0;
-            background: white;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 3rem;
-            margin-bottom: 3rem;
-            color: #d4af37;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .menu-item {
-            background: #f8f8f8;
-            padding: 2rem;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .menu-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .menu-item h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .menu-item p {
-            color: #666;
-            margin-bottom: 1rem;
-        }
-
-        .price {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #d4af37;
-        }
-
-        /* Gallery Section */
-        .gallery {
-            padding: 100px 0;
-            background: #f8f8f8;
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 3rem;
-        }
-
-        .gallery-item {
-            overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .gallery-item:hover {
-            transform: scale(1.05);
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-        }
-
-        /* Contact Section */
-        .contact {
-            padding: 100px 0;
-            background: #333;
-            color: white;
-        }
-
-        .contact-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .contact-info h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #d4af37;
-        }
-
-        .contact-info p {
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
-        .contact-form {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #d4af37;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        /* Footer */
-        footer {
-            background: #222;
-            color: white;
-            text-align: center;
-            padding: 2rem 0;
-        }
-
-        .social-links {
-            margin-top: 1rem;
-        }
-
-        .social-links a {
-            color: #d4af37;
-            font-size: 1.5rem;
-            margin: 0 1rem;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .social-links a:hover {
-            color: white;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Design */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: white; }
+        .playfair { font-family: 'Playfair Display', serif; }
+        html { scroll-behavior: smooth; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        header { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 50; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; }
+        .logo { font-size: 30px; font-weight: 700; color: #d4af37; }
+        nav ul { display: flex; list-style: none; gap: 32px; }
+        nav a { color: #374151; text-decoration: none; transition: color 0.3s; }
+        nav a:hover { color: #d4af37; }
+        #home { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom right, #8B0000, #A52A2A, #8B0000); color: white; position: relative; overflow: hidden; }
+        #home::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover; opacity: 0.2; }
+        .hero-content { position: relative; z-index: 10; text-align: center; padding: 0 24px; }
+        .hero-content h1 { font-size: 96px; font-weight: 700; margin-bottom: 24px; }
+        .hero-content p { font-size: 24px; margin-bottom: 32px; color: #e5e7eb; }
+        .btn { display: inline-block; background: #d4af37; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s; }
+        .btn:hover { background: #b8941f; transform: scale(1.05); }
+        section { padding: 96px 0; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 48px; align-items: center; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+        h2 { font-size: 48px; font-weight: 700; color: #d4af37; margin-bottom: 64px; text-align: center; }
+        .bg-gray-50 { background: #f9fafb; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s; }
+        .card:hover { box-shadow: 0 20px 25px rgba(0,0,0,0.15); transform: translateY(-8px); }
+        .card img { width: 100%; height: 192px; object-fit: cover; }
+        .card-content { padding: 24px; }
+        .card h3 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #111827; }
+        .card p { color: #6b7280; margin-bottom: 16px; }
+        .price { font-size: 24px; font-weight: 700; color: #d4af37; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .gallery-grid img { width: 100%; height: 250px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .gallery-grid img:hover { transform: scale(1.05); }
+        #contact { background: #8B0000; color: white; }
+        #contact h2 { color: white; }
+        .contact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 48px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255,255,255,0.7); }
+        footer { background: black; color: white; padding: 48px 0; text-align: center; }
+        footer a { color: #d4af37; text-decoration: none; margin: 0 24px; transition: color 0.3s; }
+        footer a:hover { color: white; }
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .hero-content h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-content p {
-                font-size: 1.2rem;
-            }
-
-            .about-content,
-            .contact-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        html {
-            scroll-behavior: smooth;
+            nav ul { display: none; }
+            .hero-content h1 { font-size: 48px; }
+            .grid-2, .grid-3, .contact-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header>
-        <nav class="container">
-            <div class="logo">Bella Vista</div>
-            <ul class="nav-links">
+        <nav>
+            <div class="logo playfair">Bella Vista</div>
+            <ul>
                 <li><a href="#home">Home</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#menu">Menu</a></li>
@@ -371,198 +68,143 @@
             </ul>
         </nav>
     </header>
-
-    <!-- Hero Section -->
-    <section id="home" class="hero">
+    <section id="home">
         <div class="hero-content">
-            <h1>Bella Vista Restaurant</h1>
+            <h1 class="playfair">Bella Vista Restaurant</h1>
             <p>Experience Authentic Italian Cuisine in the Heart of the City</p>
             <a href="#menu" class="btn">View Our Menu</a>
         </div>
     </section>
-
-    <!-- About Section -->
-    <section id="about" class="about">
+    <section id="about" class="bg-gray-50">
         <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Our Story</h2>
-                    <p>Welcome to Bella Vista, where passion for authentic Italian cuisine meets warm hospitality. For over 25 years, our family has been serving traditional recipes passed down through generations.</p>
-                    <p>Using only the finest imported ingredients and fresh local produce, we create dishes that transport you straight to the heart of Italy. Every meal is prepared with love and attention to detail.</p>
-                    <p>Join us for an unforgettable dining experience where every guest becomes part of our family.</p>
+            <div class="grid-2">
+                <div>
+                    <h2 class="playfair" style="text-align: left; margin-bottom: 24px;">Our Story</h2>
+                    <p style="color: #374151; font-size: 18px; margin-bottom: 16px; line-height: 1.8;">Welcome to Bella Vista, where passion for authentic Italian cuisine meets warm hospitality. For over 25 years, our family has been serving traditional recipes passed down through generations.</p>
+                    <p style="color: #374151; font-size: 18px; margin-bottom: 16px; line-height: 1.8;">Using only the finest imported ingredients and fresh local produce, we create dishes that transport you straight to the heart of Italy. Every meal is prepared with love and attention to detail.</p>
+                    <p style="color: #374151; font-size: 18px; line-height: 1.8;">Join us for an unforgettable dining experience where every guest becomes part of our family.</p>
                 </div>
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" alt="Restaurant Interior">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" alt="Restaurant Interior" style="width: 100%; height: 500px; object-fit: cover; border-radius: 16px; box-shadow: 0 20px 25px rgba(0,0,0,0.2);">
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Menu Section -->
-    <section id="menu" class="menu">
+    <section id="menu">
         <div class="container">
-            <h2 class="section-title">Our Signature Dishes</h2>
-            <div class="menu-grid">
-                <div class="menu-item">
+            <h2 class="playfair">Our Signature Dishes</h2>
+            <div class="grid-3">
+                <div class="card">
                     <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=1000&q=80" alt="Margherita Pizza">
-                    <h3>Margherita Pizza</h3>
-                    <p>Fresh mozzarella, San Marzano tomatoes, fresh basil, extra virgin olive oil</p>
-                    <div class="price">$18</div>
+                    <div class="card-content">
+                        <h3>Margherita Pizza</h3>
+                        <p>Fresh mozzarella, San Marzano tomatoes, fresh basil, extra virgin olive oil</p>
+                        <div class="price">$18</div>
+                    </div>
                 </div>
-                <div class="menu-item">
+                <div class="card">
                     <img src="https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?auto=format&fit=crop&w=1000&q=80" alt="Pasta Carbonara">
-                    <h3>Pasta Carbonara</h3>
-                    <p>Spaghetti with pancetta, eggs, Pecorino Romano, black pepper</p>
-                    <div class="price">$22</div>
+                    <div class="card-content">
+                        <h3>Pasta Carbonara</h3>
+                        <p>Spaghetti with pancetta, eggs, Pecorino Romano, black pepper</p>
+                        <div class="price">$22</div>
+                    </div>
                 </div>
-                <div class="menu-item">
+                <div class="card">
                     <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1000&q=80" alt="Tiramisu">
-                    <h3>Tiramisu</h3>
-                    <p>Classic Italian dessert with espresso-soaked ladyfingers and mascarpone</p>
-                    <div class="price">$12</div>
+                    <div class="card-content">
+                        <h3>Tiramisu</h3>
+                        <p>Classic Italian dessert with espresso-soaked ladyfingers and mascarpone</p>
+                        <div class="price">$12</div>
+                    </div>
                 </div>
-                <div class="menu-item">
+                <div class="card">
                     <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80" alt="Osso Buco">
-                    <h3>Osso Buco</h3>
-                    <p>Braised veal shanks with vegetables, white wine, and beef stock</p>
-                    <div class="price">$32</div>
+                    <div class="card-content">
+                        <h3>Osso Buco</h3>
+                        <p>Braised veal shanks with vegetables, white wine, and beef stock</p>
+                        <div class="price">$32</div>
+                    </div>
                 </div>
-                <div class="menu-item">
+                <div class="card">
                     <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1000&q=80" alt="Seafood Risotto">
-                    <h3>Seafood Risotto</h3>
-                    <p>Creamy arborio rice with fresh seafood, saffron, and white wine</p>
-                    <div class="price">$28</div>
+                    <div class="card-content">
+                        <h3>Seafood Risotto</h3>
+                        <p>Creamy arborio rice with fresh seafood, saffron, and white wine</p>
+                        <div class="price">$28</div>
+                    </div>
                 </div>
-                <div class="menu-item">
+                <div class="card">
                     <img src="https://images.unsplash.com/photo-1572441713132-51c75654db73?auto=format&fit=crop&w=1000&q=80" alt="Wine Selection">
-                    <h3>Wine Selection</h3>
-                    <p>Curated selection of Italian wines perfectly paired with our dishes</p>
-                    <div class="price">$8 - $45</div>
+                    <div class="card-content">
+                        <h3>Wine Selection</h3>
+                        <p>Curated selection of Italian wines perfectly paired with our dishes</p>
+                        <div class="price">$8 - $45</div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Gallery Section -->
-    <section id="gallery" class="gallery">
+    <section id="gallery" class="bg-gray-50">
         <div class="container">
-            <h2 class="section-title">Gallery</h2>
+            <h2 class="playfair">Gallery</h2>
             <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80" alt="Restaurant Ambiance">
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1000&q=80" alt="Chef Cooking">
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?auto=format&fit=crop&w=1000&q=80" alt="Food Preparation">
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=1000&q=80" alt="Dining Experience">
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&w=1000&q=80" alt="Fresh Ingredients">
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=1000&q=80" alt="Restaurant Exterior">
-                </div>
+                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80" alt="Restaurant">
+                <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1000&q=80" alt="Chef">
+                <img src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?auto=format&fit=crop&w=1000&q=80" alt="Food">
+                <img src="https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=1000&q=80" alt="Dining">
+                <img src="https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&w=1000&q=80" alt="Ingredients">
+                <img src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=1000&q=80" alt="Exterior">
             </div>
         </div>
     </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
+    <section id="contact">
         <div class="container">
-            <h2 class="section-title" style="color: white;">Contact & Reservations</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <h3>Visit Us</h3>
-                    <p>📍 123 Italian Street, Downtown District</p>
-                    <p>📞 (555) 123-4567</p>
-                    <p>✉️ info@bellavista.com</p>
-                    
-                    <h3>Hours</h3>
-                    <p>Monday - Thursday: 5:00 PM - 10:00 PM</p>
-                    <p>Friday - Saturday: 5:00 PM - 11:00 PM</p>
-                    <p>Sunday: 4:00 PM - 9:00 PM</p>
-                    
-                    <h3>Private Events</h3>
-                    <p>Host your special occasion with us! Contact us for private dining and catering options.</p>
+            <h2 class="playfair">Contact & Reservations</h2>
+            <div class="contact-grid">
+                <div>
+                    <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 16px; color: #d4af37;">Visit Us</h3>
+                    <p style="font-size: 18px; margin-bottom: 8px;">📍 123 Italian Street, Downtown District</p>
+                    <p style="font-size: 18px; margin-bottom: 8px;">📞 (555) 123-4567</p>
+                    <p style="font-size: 18px; margin-bottom: 32px;">✉️ info@bellavista.com</p>
+                    <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 16px; color: #d4af37;">Hours</h3>
+                    <p style="font-size: 18px; margin-bottom: 8px;">Monday - Thursday: 5:00 PM - 10:00 PM</p>
+                    <p style="font-size: 18px; margin-bottom: 8px;">Friday - Saturday: 5:00 PM - 11:00 PM</p>
+                    <p style="font-size: 18px;">Sunday: 4:00 PM - 9:00 PM</p>
                 </div>
-                <div class="contact-form">
-                    <h3>Make a Reservation</h3>
-                    <form>
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Phone</label>
-                            <input type="tel" id="phone" name="phone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="date">Preferred Date</label>
-                            <input type="date" id="date" name="date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="guests">Number of Guests</label>
-                            <input type="number" id="guests" name="guests" min="1" max="20" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Special Requests</label>
-                            <textarea id="message" name="message" rows="3" placeholder="Special dietary requirements, celebrations, etc."></textarea>
-                        </div>
-                        <button type="submit" class="btn">Request Reservation</button>
-                    </form>
-                </div>
+                <form style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 32px; border-radius: 12px;">
+                    <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: #d4af37;">Make a Reservation</h3>
+                    <div class="form-group">
+                        <input type="text" placeholder="Name">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email">
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" placeholder="Phone">
+                    </div>
+                    <div class="form-group">
+                        <input type="date">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" placeholder="Number of Guests" min="1" max="20">
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Special Requests" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Request Reservation</button>
+                </form>
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2024 Bella Vista Restaurant. All rights reserved.</p>
-            <div class="social-links">
-                <a href="#">📘 Facebook</a>
-                <a href="#">📷 Instagram</a>
-                <a href="#">🐦 Twitter</a>
-                <a href="#">⭐ Yelp</a>
-            </div>
+        <p style="margin-bottom: 16px;">&copy; 2024 Bella Vista Restaurant. All rights reserved.</p>
+        <div>
+            <a href="#">📘 Facebook</a>
+            <a href="#">📷 Instagram</a>
+            <a href="#">🐦 Twitter</a>
+            <a href="#">⭐ Yelp</a>
         </div>
     </footer>
-
-    <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // Header background change on scroll
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(0, 0, 0, 0.95)';
-            } else {
-                header.style.background = 'rgba(0, 0, 0, 0.9)';
-            }
-        });
-
-        // Form submission handler
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Thank you for your reservation request! We will contact you shortly to confirm.');
-            this.reset();
-        });
-    </script>
 </body>
 </html>

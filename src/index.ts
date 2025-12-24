@@ -9,30 +9,32 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Resolve the real script path (in case of symlinks)
-const realScriptPath = fs.realpathSync(process.argv[1]);
-const packageRoot = dirname(realScriptPath);
+// Use __dirname for more reliable path resolution (works in both direct execution and MCP)
+// __dirname points to dist/ when running dist/index.js
+const distDir = __dirname; // dist/
+const packageRoot = dirname(distDir); // project root
 
 /**
  * Create and start the MCP server
  * The server will automatically discover and load tools from the tools/ directory
+ * basePath should point to dist/ so it looks for dist/tools/
  */
 const server = new MCPServer({
   name: "rakitui-ai", 
   version: "1.0.4",
-  basePath: packageRoot  // Use the real package location
+  basePath: distDir  // Point to dist/ so it finds dist/tools/
 });
 
 // Output diagnostic information
 console.log("Starting Rakit UI AI MCP server...");
 console.log("Current directory:", process.cwd());
-console.log("Script path:", process.argv[1]);
-console.log("Real script path:", realScriptPath);
+console.log("__dirname:", __dirname);
+console.log("Dist directory:", distDir);
 console.log("Package root:", packageRoot);
-console.log("Expected tools path:", path.join(packageRoot, "tools"));
+console.log("Expected tools path:", path.join(distDir, "tools"));
 
 // Check if tools directory exists
-const toolsPath = path.join(packageRoot, "tools");
+const toolsPath = path.join(distDir, "tools");
 try {
   const toolsExist = fs.existsSync(toolsPath);
   console.log("Tools directory exists:", toolsExist);
@@ -47,7 +49,16 @@ try {
 /**
  * Start the server and handle any initialization errors
  */
-server.start().catch((error: Error) => {
+server.start().then(async () => {
+  // Log tool discovery after server starts
+  try {
+    const tools = await (server as any).loadTools?.() || [];
+    console.log(`[INFO] Server started. Discovered ${tools.length} tool(s):`, tools.map((t: any) => t.name || 'unnamed'));
+  } catch (err) {
+    console.log("[INFO] Could not list tools (this is normal if using framework's internal loading)");
+  }
+}).catch((error: Error) => {
   console.error("Server error:", error);
+  console.error("Error stack:", error.stack);
   process.exit(1);
 });
