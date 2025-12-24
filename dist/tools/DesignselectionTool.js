@@ -3,19 +3,30 @@ import { z } from "zod";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { generateDesignSelectionHTML } from "./templates/designSelection.js";
-import { serveHtmlOnLocalhost, getSelectedDesign, stopLocalServer, notifySelectionFinalized } from "./utils/serverUtils.js";
+import { generateDesignSelectionHTML } from "../lib/templates/designSelection.js";
+import { serveHtmlOnLocalhost, getSelectedDesign, stopLocalServer, notifySelectionFinalized } from "../lib/utils/serverUtils.js";
+import { MiniMaxClient } from "../lib/utils/minimaxClient.js";
+import { getTemplateForComponent, PROMPT_TEMPLATES } from "../prompts/designPrompts.js";
 // For handling ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // Create a temporary directory path for logs
 const tmpDir = path.join(__dirname, '../../../tmp');
+// Create MiniMax client instance
+const minimaxClient = new MiniMaxClient();
+/**
+ * Detect which workflow is being used
+ */
+function isPromptWorkflow(input) {
+    return 'prompt' in input && input.prompt !== undefined;
+}
 /**
  * Tool for selecting between different UI component designs
  *
  * This tool provides an intelligent, adaptive interface for comparing and selecting
- * between up to 3 different UI component designs. It automatically detects CSS frameworks,
- * analyzes component complexity, and adapts the layout for optimal viewing.
+ * between up to 3 different UI component designs. It can either:
+ * 1. Accept pre-generated designs directly (existing workflow)
+ * 2. Generate designs from natural language prompts using MiniMax-M2.1 (new workflow)
  *
  * Features:
  * - Framework Detection: Automatically detects Tailwind, Bootstrap, Bulma, Foundation, Semantic UI
@@ -23,36 +34,55 @@ const tmpDir = path.join(__dirname, '../../../tmp');
  * - CSS Isolation: Prevents style conflicts between different frameworks
  * - Real-time Selection: WebSocket-based communication for instant feedback
  * - Mobile Optimized: Touch-friendly interface with responsive design
+ * - AI-Powered Generation: Generate designs from natural language prompts using MiniMax-M2.1
  *
- * Perfect for: Component libraries, design systems, UI pattern comparisons, A/B testing
+ * Perfect for: Component libraries, design systems, UI pattern comparisons, A/B testing, rapid prototyping
  */
 export class DesignselectionTool extends MCPTool {
     name = "mcp_rakit-ui-ai_designselection";
-    description = "Compare and select between 3 UI component designs with intelligent layout adaptation. Supports all CSS frameworks (Tailwind, Bootstrap, Bulma, etc.) and automatically chooses the best viewing mode based on component complexity. Perfect for design systems, component libraries, and UI pattern selection.";
+    description = "Compare and select between 3 UI component designs with intelligent layout adaptation. Supports all CSS frameworks (Tailwind, Bootstrap, Bulma, etc.) and automatically chooses the best viewing mode based on component complexity. Perfect for design systems, component libraries, and UI pattern selection. NEW: Can generate designs from natural language prompts using MiniMax-M2.1 API - just provide a prompt and the tool will create 3 distinct designs for you to choose from.";
     schema = {
+        // Prompt-based workflow (primary) - only prompt is needed
+        prompt: {
+            type: z.string().optional(),
+            description: "Natural language description of the UI component to generate (e.g., 'Create 3 modern button designs for a SaaS dashboard'). When provided, the tool will use MiniMax-M2.1 to generate designs automatically. If provided, design_name_1/design_html_1 are not required.",
+        },
+        style_preference: {
+            type: z.string().optional(),
+            description: "Optional style guidance for design generation (e.g., 'modern and clean', 'playful and colorful', 'minimalist and professional').",
+        },
+        framework: {
+            type: z.string().optional(),
+            description: "Target CSS framework for design generation (tailwind, bootstrap, bulma, foundation, semantic ui, or plain css). Defaults to 'tailwind'.",
+        },
+        component_type: {
+            type: z.string().optional(),
+            description: "Type of component to generate (button, card, form, navigation, modal, table). Helps optimize the prompt for better results.",
+        },
+        // Legacy workflow (optional - only needed if not using prompt)
         design_name_1: {
-            type: z.string(),
-            description: "Name/title for the first design option (e.g., 'Modern Card Design', 'Bootstrap Button')",
+            type: z.string().optional(),
+            description: "[Optional] Name/title for the first design option. Only required if not using prompt-based generation.",
         },
         design_html_1: {
-            type: z.string(),
-            description: "Complete HTML code for the first design. Can include inline CSS, any CSS framework classes, or plain HTML. The tool will automatically detect frameworks and optimize display.",
+            type: z.string().optional(),
+            description: "[Optional] Complete HTML code for the first design. Only required if not using prompt-based generation.",
         },
         design_name_2: {
-            type: z.string(),
-            description: "Name/title for the second design option",
+            type: z.string().optional(),
+            description: "[Optional] Name/title for the second design option",
         },
         design_html_2: {
-            type: z.string(),
-            description: "Complete HTML code for the second design. Can include inline CSS, any CSS framework classes, or plain HTML.",
+            type: z.string().optional(),
+            description: "[Optional] Complete HTML code for the second design",
         },
         design_name_3: {
-            type: z.string(),
-            description: "Name/title for the third design option",
+            type: z.string().optional(),
+            description: "[Optional] Name/title for the third design option",
         },
         design_html_3: {
-            type: z.string(),
-            description: "Complete HTML code for the third design. Can include inline CSS, any CSS framework classes, or plain HTML.",
+            type: z.string().optional(),
+            description: "[Optional] Complete HTML code for the third design",
         },
     };
     /**
@@ -86,12 +116,103 @@ export class DesignselectionTool extends MCPTool {
         }
     }
     /**
+     * Validate prompt-based input
+     */
+    validatePromptInput(input) {
+        if (!input.prompt || input.prompt.trim().length === 0) {
+            throw new Error('Prompt cannot be empty. Please provide a description of the UI component you want to generate.');
+        }
+        if (input.prompt.length > 1000) {
+            throw new Error('Prompt is too long (max 1000 characters). Please provide a shorter description.');
+        }
+        // Validate framework if provided
+        const validFrameworks = ['tailwind', 'bootstrap', 'bulma', 'foundation', 'semantic ui', 'plain css', 'css'];
+        if (input.framework && !validFrameworks.map(f => f.toLowerCase()).includes(input.framework.toLowerCase())) {
+            throw new Error(`Invalid framework '${input.framework}'. Valid options: ${validFrameworks.join(', ')}`);
+        }
+    }
+    /**
+     * Generate designs using MiniMax-M2.1 API with enhanced prompts
+     */
+    async generateDesignsFromPrompt(input) {
+        const framework = input.framework || 'tailwind';
+        // Get the appropriate template based on component type
+        const componentType = input.component_type || 'button';
+        const template = getTemplateForComponent(componentType);
+        // Build the enhanced prompt using the template
+        const context = {
+            userPrompt: input.prompt,
+            framework: framework,
+            stylePreference: input.style_preference,
+            componentType: componentType,
+        };
+        const userPromptContent = template.buildUserPrompt(context);
+        // Build system + user prompt for the API
+        const systemPrompt = PROMPT_TEMPLATES.SYSTEM_PROMPT;
+        // Call MiniMax API with enhanced prompts
+        const result = await minimaxClient.generateDesigns(systemPrompt + '\n\n' + userPromptContent, framework, input.style_preference);
+        if (!result.success || !result.designs || result.designs.length < 3) {
+            throw new Error(result.error || 'Failed to generate designs from prompt. Please try a more specific prompt or different component type.');
+        }
+        // Validate design quality
+        const validDesigns = result.designs.filter(d => d.name &&
+            d.name.trim().length > 0 &&
+            d.html &&
+            d.html.trim().length > 100 && // Ensure substantial HTML
+            d.description &&
+            d.description.trim().length > 0);
+        if (validDesigns.length < 3) {
+            throw new Error('Generated designs did not meet quality standards. Please try a more specific prompt.');
+        }
+        // Extract designs from result
+        const designs = validDesigns.slice(0, 3);
+        return {
+            design_name_1: designs[0]?.name || 'Modern Design',
+            design_html_1: designs[0]?.html || '',
+            design_name_2: designs[1]?.name || 'Minimal Design',
+            design_html_2: designs[1]?.html || '',
+            design_name_3: designs[2]?.name || 'Enhanced Design',
+            design_html_3: designs[2]?.html || '',
+        };
+    }
+    /**
      * Main execution method
      */
     async execute(input) {
         const startTime = Date.now();
+        let generationMetadata = null;
         try {
-            // Validate input
+            // Validate that either prompt OR design fields are provided
+            const hasPrompt = 'prompt' in input && input.prompt && input.prompt.trim().length > 0;
+            const hasDesignFields = 'design_name_1' in input && input.design_name_1 && 'design_html_1' in input && input.design_html_1;
+            if (!hasPrompt && !hasDesignFields) {
+                throw new Error('Either provide a "prompt" for AI generation, or provide "design_name_1" and "design_html_1" for manual input.');
+            }
+            // Detect which workflow is being used
+            if (isPromptWorkflow(input)) {
+                // Prompt-based workflow - generate designs using MiniMax
+                process.stderr.write(`[INFO] Using prompt-based workflow. Generating designs with MiniMax-M2.1...\n`);
+                // Validate prompt input
+                this.validatePromptInput(input);
+                // Generate designs from prompt
+                const generatedDesigns = await this.generateDesignsFromPrompt(input);
+                // Get generation metadata
+                generationMetadata = {
+                    model: 'MiniMax-M2.1',
+                    prompt_used: input.prompt,
+                    framework: input.framework || 'tailwind',
+                    style_preference: input.style_preference || null,
+                    component_type: input.component_type || null,
+                };
+                // Convert to DesignInput format for the rest of the workflow
+                input = generatedDesigns;
+                process.stderr.write(`[INFO] Design generation complete. Proceeding to selection interface...\n`);
+            }
+            else {
+                // Legacy workflow - use provided designs
+                process.stderr.write(`[INFO] Using legacy workflow with provided designs.\n`);
+            }
+            // Validate input (works for both workflows now)
             this.validateDesignInput(input);
             // Generate HTML content
             const htmlContent = generateDesignSelectionHTML(input);
@@ -158,7 +279,8 @@ export class DesignselectionTool extends MCPTool {
                         "🖱️ Click on any design card to zoom in for better viewing",
                         "📱 The interface works on mobile devices too",
                         "🔄 Try running the tool again if the browser didn't open properly"
-                    ]
+                    ],
+                    ...(generationMetadata ? { generation: generationMetadata } : {}),
                 };
             }
             // Find the selected design HTML
@@ -210,9 +332,23 @@ export class DesignselectionTool extends MCPTool {
                 usage_info: {
                     frameworks_supported: ["Tailwind CSS", "Bootstrap", "Bulma", "Foundation", "Semantic UI", "Vanilla CSS"],
                     features: ["Automatic framework detection", "Adaptive layout (gallery/card)", "CSS isolation", "Mobile responsive", "Real-time selection"],
-                    keyboard_shortcuts: { "1": "Select first design", "2": "Select second design", "3": "Select third design", "Escape": "Close zoom view" }
-                }
+                    keyboard_shortcuts: { "1": "Select first design", "2": "Select second design", "3": "Select third design", "Escape": "Close zoom view" },
+                    ai_generation: {
+                        supported: true,
+                        model: "MiniMax-M2.1",
+                        requires_api_key: true,
+                        env_variable: "MINIMAX_API_KEY"
+                    }
+                },
             };
+            // Add generation metadata if using prompt workflow
+            if (generationMetadata) {
+                response.generation = {
+                    ...generationMetadata,
+                    tokens_used: null, // Would be populated from API response
+                    generation_time_ms: Date.now() - startTime,
+                };
+            }
             // Schedule server cleanup
             setTimeout(() => {
                 try {
@@ -234,6 +370,9 @@ export class DesignselectionTool extends MCPTool {
             catch (cleanupError) {
                 // Silent error handling
             }
+            // Determine if this was a prompt workflow error
+            const isPromptError = isPromptWorkflow(input) ||
+                (error instanceof Error && error.message.includes('MiniMax'));
             // Return an error response
             return {
                 success: false,
@@ -242,19 +381,19 @@ export class DesignselectionTool extends MCPTool {
                 url: null,
                 design_options: [
                     {
-                        name: input.design_name_1,
+                        name: isPromptWorkflow(input) ? 'Generated Design 1' : input.design_name_1,
                         description: "Option 1",
-                        preview: input.design_html_1 ? input.design_html_1.substring(0, 100) + (input.design_html_1.length > 100 ? '...' : '') : 'No HTML provided'
+                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (input.design_html_1 ? input.design_html_1.substring(0, 100) + (input.design_html_1.length > 100 ? '...' : '') : 'No HTML provided')
                     },
                     {
-                        name: input.design_name_2,
+                        name: isPromptWorkflow(input) ? 'Generated Design 2' : input.design_name_2,
                         description: "Option 2",
-                        preview: input.design_html_2 ? input.design_html_2.substring(0, 100) + (input.design_html_2.length > 100 ? '...' : '') : 'No HTML provided'
+                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (input.design_html_2 ? input.design_html_2.substring(0, 100) + (input.design_html_2.length > 100 ? '...' : '') : 'No HTML provided')
                     },
                     {
-                        name: input.design_name_3,
+                        name: isPromptWorkflow(input) ? 'Generated Design 3' : input.design_name_3,
                         description: "Option 3",
-                        preview: input.design_html_3 ? input.design_html_3.substring(0, 100) + (input.design_html_3.length > 100 ? '...' : '') : 'No HTML provided'
+                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (input.design_html_3 ? input.design_html_3.substring(0, 100) + (input.design_html_3.length > 100 ? '...' : '') : 'No HTML provided')
                     }
                 ],
                 selectedDesign: null,
@@ -273,17 +412,52 @@ export class DesignselectionTool extends MCPTool {
                         "Empty names/HTML": "All design names and HTML content must be provided",
                         "Script tags": "JavaScript and script tags are blocked for security reasons",
                         "Popup blocked": "Allow popups for localhost in your browser settings",
-                        "Port in use": "Another instance might be running - wait a moment and try again"
+                        "Port in use": "Another instance might be running - wait a moment and try again",
+                        "API key missing": "Set MINIMAX_API_KEY environment variable for prompt-based generation",
+                        "API error": "Check your MiniMax API key and quota"
                     },
                     example_usage: {
-                        design_name_1: "Modern Button",
-                        design_html_1: "<button class='bg-blue-500 text-white px-4 py-2 rounded'>Click me</button>",
-                        design_name_2: "Classic Button",
-                        design_html_2: "<button style='background: blue; color: white; padding: 8px 16px; border: none; border-radius: 4px;'>Click me</button>",
-                        design_name_3: "Outlined Button",
-                        design_html_3: "<button style='border: 2px solid blue; color: blue; background: transparent; padding: 8px 16px; border-radius: 4px;'>Click me</button>"
+                        // Prompt-based examples
+                        prompt_based: {
+                            simple: {
+                                prompt: "Create 3 modern button designs for a SaaS dashboard",
+                                style_preference: "clean and professional",
+                                framework: "tailwind"
+                            },
+                            detailed: {
+                                prompt: "Design a product card for an e-commerce site with image, title, price, and Add to Cart button",
+                                style_preference: "modern and sleek",
+                                framework: "bootstrap",
+                                component_type: "card"
+                            }
+                        },
+                        // Legacy examples
+                        legacy: {
+                            design_name_1: "Modern Button",
+                            design_html_1: "<button class='bg-blue-500 text-white px-4 py-2 rounded'>Click me</button>",
+                            design_name_2: "Classic Button",
+                            design_html_2: "<button style='background: blue; color: white; padding: 8px 16px; border: none; border-radius: 4px;'>Click me</button>",
+                            design_name_3: "Outlined Button",
+                            design_html_3: "<button style='border: 2px solid blue; color: blue; background: transparent; padding: 8px 16px; border-radius: 4px;'>Click me</button>"
+                        }
+                    },
+                    prompt_tips: [
+                        "Be specific about the component type (button, card, form, etc.)",
+                        "Mention the target framework (tailwind, bootstrap, etc.)",
+                        "Describe the style you prefer (minimal, modern, colorful, etc.)",
+                        "Include any specific requirements or use cases",
+                        "Keep prompts under 1000 characters for best results"
+                    ]
+                },
+                ...(isPromptError ? {
+                    api_help: {
+                        required_env: "MINIMAX_API_KEY",
+                        setup_instructions: "Set MINIMAX_API_KEY environment variable with your MiniMax API key",
+                        get_api_key: "Visit https://platform.minimax.io to get your API key",
+                        supported_frameworks: ["tailwind", "bootstrap", "bulma", "foundation", "semantic ui", "plain css"],
+                        example: "export MINIMAX_API_KEY='your-api-key-here'"
                     }
-                }
+                } : {}),
             };
         }
     }
