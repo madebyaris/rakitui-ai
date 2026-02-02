@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "rakitui-ai": "./dist/index.js"
+    "rakitui-ai": "dist/index.js"
   },
   "files": [
     "dist",
