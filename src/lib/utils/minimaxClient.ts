@@ -63,6 +63,23 @@ export interface DesignGenerationResult {
   generationTimeMs?: number;
 }
 
+export interface ReferenceGenerationResult {
+  success: boolean;
+  references?: Array<{
+    title: string;
+    url: string;
+    reason?: string;
+    source?: string;
+  }>;
+  error?: string;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  generationTimeMs?: number;
+}
+
 export class MiniMaxClient {
   private apiKey: string;
   private model: string;
@@ -96,7 +113,7 @@ export class MiniMaxClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      const response = await fetch(`${this.baseUrl}`, {
+      const response = await fetch(`${this.baseUrl}/text/chatcompletion_v2`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -119,7 +136,12 @@ export class MiniMaxClient {
         
         try {
           const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.error?.message || errorJson.error || errorText;
+          // MiniMax API might return error in base_resp or error field
+          errorMessage = errorJson.base_resp?.status_msg || 
+                        errorJson.error?.message || 
+                        errorJson.error || 
+                        errorJson.message ||
+                        errorText;
         } catch {
           errorMessage = errorText;
         }
@@ -184,6 +206,71 @@ export class MiniMaxClient {
         generationTimeMs: Date.now() - startTime,
       };
 
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        generationTimeMs: Date.now() - startTime,
+      };
+    }
+  }
+
+  /**
+   * Generate research references based on a prompt
+   */
+  async generateReferences(
+    prompt: string,
+    componentType: string = 'button',
+    framework: string = 'tailwind'
+  ): Promise<ReferenceGenerationResult> {
+    const startTime = Date.now();
+
+    try {
+      const systemPrompt = `You are a UX research assistant. Provide references for UI component inspiration.
+Return JSON only with this shape:
+{
+  "references": [
+    { "title": "Reference title", "url": "https://...", "reason": "Why it's relevant", "source": "site name" }
+  ]
+}
+Rules:
+- Provide 3 to 6 references.
+- Use real, commonly known sources when possible (design systems, docs, reputable galleries).
+- No markdown, no explanations, JSON only.`;
+
+      const userPrompt = `Find UI references for:
+- Component: ${componentType}
+- Framework: ${framework}
+- Prompt: ${prompt}`;
+
+      const response = await this.callAPI({
+        model: this.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: 2048,
+        temperature: 0.4,
+      });
+
+      const content = response.choices[0]?.message?.content || '';
+      const references = this.parseReferencesFromResponse(content);
+
+      if (!references || references.length === 0) {
+        return {
+          success: false,
+          error: 'Failed to parse references from API response',
+          usage: response.usage,
+          generationTimeMs: Date.now() - startTime,
+        };
+      }
+
+      return {
+        success: true,
+        references,
+        usage: response.usage,
+        generationTimeMs: Date.now() - startTime,
+      };
     } catch (error) {
       return {
         success: false,
@@ -341,6 +428,40 @@ Output Format - JSON ONLY (no markdown, no explanations):
     }
   }
 
+  private parseReferencesFromResponse(content: string): Array<{
+    title: string;
+    url: string;
+    reason?: string;
+    source?: string;
+  }> | null {
+    try {
+      let jsonContent = content.trim();
+
+      jsonContent = jsonContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      jsonContent = jsonContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+
+      const jsonMatch = jsonContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonContent = jsonMatch[0];
+      }
+
+      const parsed = JSON.parse(jsonContent);
+      if (parsed.references && Array.isArray(parsed.references)) {
+        return parsed.references.map((ref: any) => ({
+          title: ref.title || 'Reference',
+          url: ref.url || '',
+          reason: ref.reason || '',
+          source: ref.source || '',
+        }));
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Failed to parse references from response:', error);
+      return null;
+    }
+  }
+
   /**
    * Check if the API is accessible and credentials are valid
    */
@@ -351,11 +472,18 @@ Output Format - JSON ONLY (no markdown, no explanations):
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const response = await fetch(`${this.baseUrl}/models`, {
+      // Use a simple chat completion request as health check
+      const response = await fetch(`${this.baseUrl}/text/chatcompletion_v2`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 1,
+        }),
         signal: controller.signal,
       });
 

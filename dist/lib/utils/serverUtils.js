@@ -15,6 +15,7 @@ let server = null;
 let wss = null;
 let activeWebSocket = null;
 let port = 3000;
+let pendingDesigns = null;
 // Create a temporary directory for HTML files if it doesn't exist
 const tmpDir = path.join(__dirname, '../../../tmp');
 if (!fs.existsSync(tmpDir)) {
@@ -54,27 +55,55 @@ export async function serveHtmlOnLocalhost(filename, htmlContent) {
     // Reset state for new serving session
     selectedDesign = null;
     selectionComplete = false;
+    pendingDesigns = null;
+    // Clean up any existing server first
+    if (server) {
+        try {
+            server.close();
+            server = null;
+        }
+        catch (e) {
+            // Ignore cleanup errors
+        }
+    }
+    if (wss) {
+        try {
+            wss.close();
+            wss = null;
+        }
+        catch (e) {
+            // Ignore cleanup errors
+        }
+    }
     // Create a temp HTML file
     const htmlFilePath = path.join(tmpDir, `${filename}-${Date.now()}.html`);
     fs.writeFileSync(htmlFilePath, htmlContent);
-    // Start at port 3000 and increment if needed
-    let currentPort = port;
+    // Find an available port starting from the current port
+    let currentPort = await findAvailablePort(port);
+    // Try to create server on the available port
+    let attempts = 0;
+    const maxAttempts = 10;
     let serverCreated = false;
-    // Try ports until one works
-    while (!serverCreated && currentPort < port + 100) {
+    while (!serverCreated && attempts < maxAttempts) {
         try {
             await createServer(currentPort, htmlFilePath);
             serverCreated = true;
         }
         catch (error) {
-            logger.log(`Port ${currentPort} in use, trying next port...`);
-            currentPort++;
+            if (error.code === 'EADDRINUSE') {
+                logger.log(`Port ${currentPort} in use, finding next available port...`);
+                currentPort = await findAvailablePort(currentPort + 1);
+                attempts++;
+            }
+            else {
+                throw error;
+            }
         }
     }
     if (!serverCreated) {
-        throw new Error('Could not find an available port');
+        throw new Error(`Could not find an available port after ${maxAttempts} attempts`);
     }
-    // Update the global port for next time
+    // Update the global port for next time (use next port to avoid immediate conflicts)
     port = currentPort + 1;
     const url = `http://localhost:${currentPort}/design-selection`;
     // Open the URL in the default browser
@@ -82,10 +111,60 @@ export async function serveHtmlOnLocalhost(filename, htmlContent) {
     return url;
 }
 /**
+ * Finds an available port by attempting to create a server on it
+ */
+function findAvailablePort(startPort) {
+    return new Promise((resolve, reject) => {
+        const testServer = http.createServer();
+        testServer.listen(startPort, () => {
+            const address = testServer.address();
+            const port = address && typeof address === 'object' ? address.port : null;
+            testServer.close(() => {
+                if (port) {
+                    resolve(port);
+                }
+                else {
+                    reject(new Error('Could not determine port'));
+                }
+            });
+        });
+        testServer.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                // Port is in use, try next port
+                testServer.close(() => {
+                    findAvailablePort(startPort + 1).then(resolve).catch(reject);
+                });
+            }
+            else {
+                reject(err);
+            }
+        });
+    });
+}
+/**
  * Creates an HTTP server on the specified port with WebSocket support
  */
 function createServer(port, htmlFilePath) {
     return new Promise((resolve, reject) => {
+        // Clean up any existing server first
+        if (server) {
+            try {
+                server.close();
+            }
+            catch (e) {
+                // Ignore errors during cleanup
+            }
+            server = null;
+        }
+        if (wss) {
+            try {
+                wss.close();
+            }
+            catch (e) {
+                // Ignore errors during cleanup
+            }
+            wss = null;
+        }
         // Create the server that will serve the HTML and handle the selection
         server = http.createServer((req, res) => {
             // Enable CORS for all responses
@@ -170,6 +249,15 @@ function createServer(port, htmlFilePath) {
                             timestamp: new Date().toISOString()
                         }));
                     }
+                    else if (data.type === 'request-designs') {
+                        // Client is requesting designs - send if available
+                        if (pendingDesigns) {
+                            ws.send(JSON.stringify({
+                                type: 'designs-ready',
+                                ...pendingDesigns
+                            }));
+                        }
+                    }
                 }
                 catch (error) {
                     logger.error(`WebSocket message error: ${error}`);
@@ -185,13 +273,22 @@ function createServer(port, htmlFilePath) {
                 logger.error(`WebSocket error: ${error}`);
             });
         });
+        // Handle server errors BEFORE calling listen
+        server.on('error', (error) => {
+            if (error.code === 'EADDRINUSE') {
+                logger.log(`Port ${port} is in use, will try next port`);
+                // Don't reject here - let the caller handle port selection
+                reject(error);
+            }
+            else {
+                logger.error(`Server error: ${error.message}`);
+                reject(error);
+            }
+        });
         // Start the server
         server.listen(port, () => {
             logger.log(`Server running at http://localhost:${port}/design-selection`);
             resolve();
-        });
-        server.on('error', (error) => {
-            reject(error);
         });
     });
 }
@@ -201,6 +298,24 @@ function createServer(port, htmlFilePath) {
 export function getSelectedDesign() {
     logger.log(`getSelectedDesign called, current value: ${selectedDesign}`);
     return selectedDesign;
+}
+/**
+ * Update designs and notify connected clients
+ */
+export function updateDesigns(designs) {
+    logger.log('Updating designs and notifying clients');
+    pendingDesigns = designs;
+    // Notify all connected WebSocket clients
+    if (wss) {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                    type: 'designs-ready',
+                    ...designs
+                }));
+            }
+        });
+    }
 }
 /**
  * Checks if selection process is complete

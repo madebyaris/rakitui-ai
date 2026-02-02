@@ -18,43 +18,43 @@ const packageRoot = dirname(distDir); // project root
  */
 const server = new MCPServer({
     name: "rakitui-ai",
-    version: "1.0.4",
+    version: "1.1.0",
     basePath: distDir // Point to dist/ so it finds dist/tools/
 });
-// Output diagnostic information
-console.log("Starting Rakit UI AI MCP server...");
-console.log("Current directory:", process.cwd());
-console.log("__dirname:", __dirname);
-console.log("Dist directory:", distDir);
-console.log("Package root:", packageRoot);
-console.log("Expected tools path:", path.join(distDir, "tools"));
+// Output diagnostic information to stderr (MCP protocol uses stdout for JSON)
+process.stderr.write("Starting Rakit UI AI MCP server...\n");
+process.stderr.write(`Current directory: ${process.cwd()}\n`);
+process.stderr.write(`__dirname: ${__dirname}\n`);
+process.stderr.write(`Dist directory: ${distDir}\n`);
+process.stderr.write(`Package root: ${packageRoot}\n`);
+process.stderr.write(`Expected tools path: ${path.join(distDir, "tools")}\n`);
 // Check if tools directory exists
 const toolsPath = path.join(distDir, "tools");
 try {
     const toolsExist = fs.existsSync(toolsPath);
-    console.log("Tools directory exists:", toolsExist);
+    process.stderr.write(`Tools directory exists: ${toolsExist}\n`);
     if (toolsExist) {
         const files = fs.readdirSync(toolsPath);
-        console.log("Files in tools directory:", files);
+        process.stderr.write(`Files in tools directory: ${files.join(", ")}\n`);
     }
 }
 catch (error) {
-    console.log("Error checking tools directory:", error instanceof Error ? error.message : String(error));
+    process.stderr.write(`Error checking tools directory: ${error instanceof Error ? error.message : String(error)}\n`);
 }
 /**
  * Start the server and handle any initialization errors
  */
 server.start().then(async () => {
-    // Log tool discovery after server starts
+    // Log tool discovery after server starts (to stderr for MCP protocol)
     try {
         const tools = await server.loadTools?.() || [];
-        console.log(`[INFO] Server started. Discovered ${tools.length} tool(s):`, tools.map((t) => t.name || 'unnamed'));
+        process.stderr.write(`[INFO] Server started. Discovered ${tools.length} tool(s): ${tools.map((t) => t.name || 'unnamed').join(", ")}\n`);
     }
     catch (err) {
-        console.log("[INFO] Could not list tools (this is normal if using framework's internal loading)");
+        process.stderr.write("[INFO] Could not list tools (this is normal if using framework's internal loading)\n");
     }
 }).catch((error) => {
-    console.error("Server error:", error);
-    console.error("Error stack:", error.stack);
+    process.stderr.write(`Server error: ${error.message}\n`);
+    process.stderr.write(`Error stack: ${error.stack}\n`);
     process.exit(1);
 });

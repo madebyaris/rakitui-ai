@@ -1,0 +1,29 @@
+node_modules/
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Temp output
+tmp/
+.tmp/
+.cache/
+
+# OS files
+.DS_Store
+
+# Package artifacts
+*.tgz
+
+#temp
+tmp/
+temp/
+

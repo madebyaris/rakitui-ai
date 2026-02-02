@@ -113,19 +113,27 @@ if (existsSync(distToolsPath)) {
   }
 }
 
-// Step 7: Validate prompts
+// Step 7: Validate prompts (designPrompts is now in lib/utils, not prompts)
 console.log('\nValidating prompts...');
 if (existsSync(distPromptsPath)) {
   const entries = readdirSync(distPromptsPath, { withFileTypes: true });
   const jsFiles = entries.filter(e => e.isFile() && e.name.endsWith('.js'));
   
-  if (jsFiles.some(f => f.name === 'designPrompts.js')) {
-    console.log('✅ Found dist/prompts/designPrompts.js');
+  if (jsFiles.length > 0) {
+    console.log(`⚠️  Found ${jsFiles.length} .js file(s) in dist/prompts (should be empty for this project)`);
   } else {
-    console.log('❌ dist/prompts/designPrompts.js not found');
+    console.log('✅ dist/prompts directory is empty (designPrompts moved to lib/utils)');
   }
 } else {
-  console.log('⚠️  dist/prompts directory not found');
+  console.log('✅ dist/prompts directory not found (expected - designPrompts is in lib/utils)');
+}
+
+// Validate designPrompts is in lib/utils
+const designPromptsPath = join(projectRoot, 'dist', 'lib', 'utils', 'designPrompts.js');
+if (existsSync(designPromptsPath)) {
+  console.log('✅ Found dist/lib/utils/designPrompts.js');
+} else {
+  console.log('⚠️  dist/lib/utils/designPrompts.js not found');
 }
 
 console.log('\nBuild completed successfully!');

@@ -4,9 +4,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { generateDesignSelectionHTML } from "../lib/templates/designSelection.js";
-import { serveHtmlOnLocalhost, getSelectedDesign, stopLocalServer, notifySelectionFinalized } from "../lib/utils/serverUtils.js";
+import { serveHtmlOnLocalhost, getSelectedDesign, stopLocalServer, notifySelectionFinalized, updateDesigns } from "../lib/utils/serverUtils.js";
 import { MiniMaxClient } from "../lib/utils/minimaxClient.js";
-import { getTemplateForComponent, PROMPT_TEMPLATES } from "../prompts/designPrompts.js";
+import { getTemplateForComponent, PROMPT_TEMPLATES } from "../lib/utils/designPrompts.js";
 // For handling ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -58,6 +58,26 @@ export class DesignselectionTool extends MCPTool {
         component_type: {
             type: z.string().optional(),
             description: "Type of component to generate (button, card, form, navigation, modal, table). Helps optimize the prompt for better results.",
+        },
+        auto_search_reference: {
+            type: z.boolean().optional(),
+            description: "When true, the tool will ask MiniMax to generate reference links and inspiration sources based on the prompt.",
+        },
+        purpose_include: {
+            type: z.array(z.string()).optional(),
+            description: "List of elements or requirements that must be included in the design (e.g., ['image', 'pricing', 'CTA button']).",
+        },
+        purpose_exclude: {
+            type: z.array(z.string()).optional(),
+            description: "List of elements or patterns to avoid in the design (e.g., ['carousel', 'icons']).",
+        },
+        purpose_notes: {
+            type: z.string().optional(),
+            description: "Additional purpose notes or constraints for the design generation.",
+        },
+        view_mode: {
+            type: z.enum(['mobile', 'desktop', 'responsive']).optional(),
+            description: "Default preview mode for the selection UI (mobile, desktop, or responsive).",
         },
         // Legacy workflow (optional - only needed if not using prompt)
         design_name_1: {
@@ -130,6 +150,64 @@ export class DesignselectionTool extends MCPTool {
         if (input.framework && !validFrameworks.map(f => f.toLowerCase()).includes(input.framework.toLowerCase())) {
             throw new Error(`Invalid framework '${input.framework}'. Valid options: ${validFrameworks.join(', ')}`);
         }
+        this.validateSelectionMetadata(input);
+    }
+    /**
+     * Validate optional metadata for selection and intent
+     */
+    validateSelectionMetadata(input) {
+        const validViewModes = ['mobile', 'desktop', 'responsive'];
+        if (input.view_mode && !validViewModes.includes(input.view_mode)) {
+            throw new Error(`Invalid view_mode '${input.view_mode}'. Valid options: ${validViewModes.join(', ')}`);
+        }
+        const validateList = (items, label) => {
+            if (!items)
+                return;
+            if (items.length > 12) {
+                throw new Error(`${label} has too many items (max 12).`);
+            }
+            items.forEach((item) => {
+                if (typeof item !== 'string' || item.trim().length === 0) {
+                    throw new Error(`${label} items must be non-empty strings.`);
+                }
+                if (item.length > 120) {
+                    throw new Error(`${label} item too long (max 120 characters).`);
+                }
+            });
+        };
+        validateList(input.purpose_include, 'purpose_include');
+        validateList(input.purpose_exclude, 'purpose_exclude');
+        if (input.purpose_notes && input.purpose_notes.length > 500) {
+            throw new Error('purpose_notes is too long (max 500 characters).');
+        }
+    }
+    buildPurposeMetadata(input) {
+        const include = input.purpose_include?.filter(Boolean);
+        const exclude = input.purpose_exclude?.filter(Boolean);
+        const notes = input.purpose_notes?.trim();
+        if ((include && include.length > 0) || (exclude && exclude.length > 0) || notes) {
+            return {
+                include: include && include.length > 0 ? include : undefined,
+                exclude: exclude && exclude.length > 0 ? exclude : undefined,
+                notes: notes || undefined,
+            };
+        }
+        return null;
+    }
+    buildPurposePrompt(purpose) {
+        if (!purpose)
+            return '';
+        const lines = ['Purpose and constraints:'];
+        if (purpose.include && purpose.include.length > 0) {
+            lines.push(`- Must include: ${purpose.include.join(', ')}`);
+        }
+        if (purpose.exclude && purpose.exclude.length > 0) {
+            lines.push(`- Must avoid: ${purpose.exclude.join(', ')}`);
+        }
+        if (purpose.notes) {
+            lines.push(`- Notes: ${purpose.notes}`);
+        }
+        return lines.join('\n');
     }
     /**
      * Generate designs using MiniMax-M2.1 API with enhanced prompts
@@ -140,8 +218,11 @@ export class DesignselectionTool extends MCPTool {
         const componentType = input.component_type || 'button';
         const template = getTemplateForComponent(componentType);
         // Build the enhanced prompt using the template
+        const purposeMetadata = this.buildPurposeMetadata(input);
+        const purposePrompt = this.buildPurposePrompt(purposeMetadata);
+        const promptWithPurpose = purposePrompt ? `${input.prompt}\n\n${purposePrompt}` : input.prompt;
         const context = {
-            userPrompt: input.prompt,
+            userPrompt: promptWithPurpose,
             framework: framework,
             stylePreference: input.style_preference,
             componentType: componentType,
@@ -176,11 +257,71 @@ export class DesignselectionTool extends MCPTool {
         };
     }
     /**
+     * Generate designs in background and update UI via WebSocket
+     */
+    async generateDesignsInBackground(input, purposeMetadata, viewMode, url) {
+        try {
+            let references = [];
+            let referenceError = null;
+            // Generate references if requested
+            if (input.auto_search_reference) {
+                process.stderr.write(`[INFO] Auto search reference enabled. Generating references via MiniMax...\n`);
+                const purposePrompt = this.buildPurposePrompt(purposeMetadata);
+                const promptWithPurpose = purposePrompt ? `${input.prompt}\n\n${purposePrompt}` : input.prompt;
+                const referenceResult = await minimaxClient.generateReferences(promptWithPurpose, input.component_type || 'button', input.framework || 'tailwind');
+                if (referenceResult.success && referenceResult.references) {
+                    references = referenceResult.references;
+                }
+                else if (referenceResult.error) {
+                    referenceError = referenceResult.error;
+                }
+            }
+            // Generate designs from prompt
+            const generatedDesigns = await this.generateDesignsFromPrompt(input);
+            // Update UI with generated designs
+            updateDesigns({
+                designs: [
+                    {
+                        name: generatedDesigns.design_name_1,
+                        html: generatedDesigns.design_html_1,
+                        description: 'Design option 1'
+                    },
+                    {
+                        name: generatedDesigns.design_name_2,
+                        html: generatedDesigns.design_html_2,
+                        description: 'Design option 2'
+                    },
+                    {
+                        name: generatedDesigns.design_name_3,
+                        html: generatedDesigns.design_html_3,
+                        description: 'Design option 3'
+                    }
+                ],
+                references: references.length > 0 ? references : undefined
+            });
+            process.stderr.write(`[INFO] Design generation complete. Designs sent to UI.\n`);
+            // Return generated designs for response building
+            return generatedDesigns;
+        }
+        catch (error) {
+            process.stderr.write(`[ERROR] Background generation failed: ${error}\n`);
+            updateDesigns({
+                error: error instanceof Error ? error.message : String(error)
+            });
+            return null;
+        }
+    }
+    /**
      * Main execution method
      */
     async execute(input) {
         const startTime = Date.now();
         let generationMetadata = null;
+        let purposeMetadata = null;
+        let references = [];
+        let referenceError = null;
+        let viewMode = 'responsive';
+        let finalDesigns = null;
         try {
             // Validate that either prompt OR design fields are provided
             const hasPrompt = 'prompt' in input && input.prompt && input.prompt.trim().length > 0;
@@ -188,15 +329,49 @@ export class DesignselectionTool extends MCPTool {
             if (!hasPrompt && !hasDesignFields) {
                 throw new Error('Either provide a "prompt" for AI generation, or provide "design_name_1" and "design_html_1" for manual input.');
             }
+            // Store hasDesignFields for later use
+            const hasDesignFieldsValue = hasDesignFields;
+            // Extract optional metadata early
+            if ('view_mode' in input && input.view_mode) {
+                viewMode = input.view_mode;
+            }
+            if ('purpose_include' in input || 'purpose_exclude' in input || 'purpose_notes' in input) {
+                purposeMetadata = this.buildPurposeMetadata(input);
+            }
             // Detect which workflow is being used
+            let url;
             if (isPromptWorkflow(input)) {
-                // Prompt-based workflow - generate designs using MiniMax
-                process.stderr.write(`[INFO] Using prompt-based workflow. Generating designs with MiniMax-M2.1...\n`);
+                // Prompt-based workflow - show UI immediately, generate designs in background
+                process.stderr.write(`[INFO] Using prompt-based workflow. Showing UI immediately, generating designs in background...\n`);
                 // Validate prompt input
                 this.validatePromptInput(input);
-                // Generate designs from prompt
-                const generatedDesigns = await this.generateDesignsFromPrompt(input);
-                // Get generation metadata
+                // Create loading state HTML immediately
+                const loadingInput = {
+                    design_name_1: 'Loading Design 1...',
+                    design_html_1: '<div style="padding: 40px; text-align: center; color: #6b7280;">Generating with MiniMax-M2.1...</div>',
+                    design_name_2: 'Loading Design 2...',
+                    design_html_2: '<div style="padding: 40px; text-align: center; color: #6b7280;">Generating with MiniMax-M2.1...</div>',
+                    design_name_3: 'Loading Design 3...',
+                    design_html_3: '<div style="padding: 40px; text-align: center; color: #6b7280;">Generating with MiniMax-M2.1...</div>',
+                    purpose: purposeMetadata || undefined,
+                    references: undefined,
+                    reference_error: undefined,
+                    view_mode: viewMode,
+                    is_loading: true,
+                    loading_prompt: input.prompt,
+                };
+                const htmlContent = generateDesignSelectionHTML(loadingInput);
+                url = await serveHtmlOnLocalhost('design-selection', htmlContent);
+                // Store loading designs for response building
+                finalDesigns = {
+                    design_name_1: 'Loading Design 1...',
+                    design_html_1: '<div>Generating...</div>',
+                    design_name_2: 'Loading Design 2...',
+                    design_html_2: '<div>Generating...</div>',
+                    design_name_3: 'Loading Design 3...',
+                    design_html_3: '<div>Generating...</div>',
+                };
+                // Set generation metadata immediately (will be updated when designs complete)
                 generationMetadata = {
                     model: 'MiniMax-M2.1',
                     prompt_used: input.prompt,
@@ -204,20 +379,38 @@ export class DesignselectionTool extends MCPTool {
                     style_preference: input.style_preference || null,
                     component_type: input.component_type || null,
                 };
-                // Convert to DesignInput format for the rest of the workflow
-                input = generatedDesigns;
-                process.stderr.write(`[INFO] Design generation complete. Proceeding to selection interface...\n`);
+                // Start generation in background (don't await)
+                this.generateDesignsInBackground(input, purposeMetadata, viewMode, url).then((generated) => {
+                    if (generated) {
+                        finalDesigns = generated;
+                    }
+                }).catch((error) => {
+                    process.stderr.write(`[ERROR] Background generation failed: ${error}\n`);
+                    updateDesigns({ error: error instanceof Error ? error.message : String(error) });
+                });
             }
             else {
                 // Legacy workflow - use provided designs
                 process.stderr.write(`[INFO] Using legacy workflow with provided designs.\n`);
+                this.validateSelectionMetadata(input);
+                if ('auto_search_reference' in input && input.auto_search_reference) {
+                    referenceError = 'Auto search reference requires a prompt. Provide a prompt to enable this feature.';
+                }
+                // Validate input
+                this.validateDesignInput(input);
+                // Generate HTML content
+                const selectionInput = {
+                    ...input,
+                    purpose: purposeMetadata || undefined,
+                    references: references.length > 0 ? references : undefined,
+                    reference_error: referenceError || undefined,
+                    view_mode: viewMode,
+                };
+                const htmlContent = generateDesignSelectionHTML(selectionInput);
+                url = await serveHtmlOnLocalhost('design-selection', htmlContent);
+                // Store final designs for response building
+                finalDesigns = input;
             }
-            // Validate input (works for both workflows now)
-            this.validateDesignInput(input);
-            // Generate HTML content
-            const htmlContent = generateDesignSelectionHTML(input);
-            // Serve the HTML content on a local server and open in browser
-            const url = await serveHtmlOnLocalhost('design-selection', htmlContent);
             // Wait for user to make a selection
             let selectedDesign = null;
             const timeoutMs = 15 * 60 * 1000; // 15 minutes total timeout
@@ -239,6 +432,14 @@ export class DesignselectionTool extends MCPTool {
                     notifySelectionFinalized();
                     // Give a moment for the browser to close gracefully
                     await new Promise(resolve => setTimeout(resolve, 500));
+                    // Close the server immediately after selection
+                    try {
+                        stopLocalServer();
+                        process.stderr.write(`[DEBUG] Server closed after selection\n`);
+                    }
+                    catch (shutdownError) {
+                        process.stderr.write(`[ERROR] Server shutdown error: ${shutdownError}\n`);
+                    }
                     break;
                 }
                 // Wait before checking again
@@ -249,31 +450,46 @@ export class DesignselectionTool extends MCPTool {
                 // Clean up
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 stopLocalServer();
+                // Use finalDesigns if available, otherwise use input as DesignInput
+                const timeoutDesigns = finalDesigns || (hasDesignFieldsValue ? input : {
+                    design_name_1: 'No Design',
+                    design_html_1: '',
+                    design_name_2: 'No Design',
+                    design_html_2: '',
+                    design_name_3: 'No Design',
+                    design_html_3: '',
+                });
                 return {
                     success: false,
                     message: "⏱️ No design was selected within the timeout period. The interface was available for 15 minutes.",
                     url: url,
                     design_options: [
                         {
-                            name: input.design_name_1,
+                            name: timeoutDesigns.design_name_1,
                             description: "Option 1",
-                            preview: input.design_html_1 ? input.design_html_1.substring(0, 100) + (input.design_html_1.length > 100 ? '...' : '') : 'No HTML provided'
+                            preview: timeoutDesigns.design_html_1 ? timeoutDesigns.design_html_1.substring(0, 100) + (timeoutDesigns.design_html_1.length > 100 ? '...' : '') : 'No HTML provided'
                         },
                         {
-                            name: input.design_name_2,
+                            name: timeoutDesigns.design_name_2,
                             description: "Option 2",
-                            preview: input.design_html_2 ? input.design_html_2.substring(0, 100) + (input.design_html_2.length > 100 ? '...' : '') : 'No HTML provided'
+                            preview: timeoutDesigns.design_html_2 ? timeoutDesigns.design_html_2.substring(0, 100) + (timeoutDesigns.design_html_2.length > 100 ? '...' : '') : 'No HTML provided'
                         },
                         {
-                            name: input.design_name_3,
+                            name: timeoutDesigns.design_name_3,
                             description: "Option 3",
-                            preview: input.design_html_3 ? input.design_html_3.substring(0, 100) + (input.design_html_3.length > 100 ? '...' : '') : 'No HTML provided'
+                            preview: timeoutDesigns.design_html_3 ? timeoutDesigns.design_html_3.substring(0, 100) + (timeoutDesigns.design_html_3.length > 100 ? '...' : '') : 'No HTML provided'
                         }
                     ],
                     selectedDesign: null,
                     selectedDesignHtml: null,
                     selectionTimestamp: null,
                     selectionDuration: Date.now() - startTime,
+                    selection_context: {
+                        purpose: purposeMetadata,
+                        references,
+                        view_mode: viewMode,
+                        reference_error: referenceError
+                    },
                     tips: [
                         "💡 Use keyboard shortcuts (1, 2, 3) for quick selection",
                         "🖱️ Click on any design card to zoom in for better viewing",
@@ -283,16 +499,24 @@ export class DesignselectionTool extends MCPTool {
                     ...(generationMetadata ? { generation: generationMetadata } : {}),
                 };
             }
-            // Find the selected design HTML
+            // Find the selected design HTML (use finalDesigns which has the actual generated designs)
+            const designsToUse = finalDesigns || (hasDesignFieldsValue ? input : {
+                design_name_1: 'No Design',
+                design_html_1: '',
+                design_name_2: 'No Design',
+                design_html_2: '',
+                design_name_3: 'No Design',
+                design_html_3: '',
+            });
             let selectedDesignHtml = '';
-            if (selectedDesign === input.design_name_1) {
-                selectedDesignHtml = input.design_html_1;
+            if (selectedDesign === designsToUse.design_name_1) {
+                selectedDesignHtml = designsToUse.design_html_1;
             }
-            else if (selectedDesign === input.design_name_2) {
-                selectedDesignHtml = input.design_html_2;
+            else if (selectedDesign === designsToUse.design_name_2) {
+                selectedDesignHtml = designsToUse.design_html_2;
             }
-            else if (selectedDesign === input.design_name_3) {
-                selectedDesignHtml = input.design_html_3;
+            else if (selectedDesign === designsToUse.design_name_3) {
+                selectedDesignHtml = designsToUse.design_html_3;
             }
             // Prepare the successful response
             const response = {
@@ -301,28 +525,34 @@ export class DesignselectionTool extends MCPTool {
                 url: url,
                 design_options: [
                     {
-                        name: input.design_name_1,
+                        name: designsToUse.design_name_1,
                         description: "Option 1",
-                        selected: selectedDesign === input.design_name_1,
-                        preview: input.design_html_1.substring(0, 100) + (input.design_html_1.length > 100 ? '...' : '')
+                        selected: selectedDesign === designsToUse.design_name_1,
+                        preview: designsToUse.design_html_1.substring(0, 100) + (designsToUse.design_html_1.length > 100 ? '...' : '')
                     },
                     {
-                        name: input.design_name_2,
+                        name: designsToUse.design_name_2,
                         description: "Option 2",
-                        selected: selectedDesign === input.design_name_2,
-                        preview: input.design_html_2.substring(0, 100) + (input.design_html_2.length > 100 ? '...' : '')
+                        selected: selectedDesign === designsToUse.design_name_2,
+                        preview: designsToUse.design_html_2.substring(0, 100) + (designsToUse.design_html_2.length > 100 ? '...' : '')
                     },
                     {
-                        name: input.design_name_3,
+                        name: designsToUse.design_name_3,
                         description: "Option 3",
-                        selected: selectedDesign === input.design_name_3,
-                        preview: input.design_html_3.substring(0, 100) + (input.design_html_3.length > 100 ? '...' : '')
+                        selected: selectedDesign === designsToUse.design_name_3,
+                        preview: designsToUse.design_html_3.substring(0, 100) + (designsToUse.design_html_3.length > 100 ? '...' : '')
                     }
                 ],
                 selectedDesign: selectedDesign,
                 selectedDesignHtml: selectedDesignHtml,
                 selectionTimestamp: new Date().toISOString(),
                 selectionDuration: Date.now() - startTime,
+                selection_context: {
+                    purpose: purposeMetadata,
+                    references,
+                    view_mode: viewMode,
+                    reference_error: referenceError
+                },
                 next_steps: [
                     "🎨 Copy the selected HTML code from the 'selectedDesignHtml' field",
                     "✨ Integrate the design into your project",
@@ -344,21 +574,25 @@ export class DesignselectionTool extends MCPTool {
             // Add generation metadata if using prompt workflow
             if (generationMetadata) {
                 response.generation = {
-                    ...generationMetadata,
+                    model: generationMetadata.model,
+                    prompt_used: generationMetadata.prompt_used,
+                    framework: generationMetadata.framework,
+                    style_preference: generationMetadata.style_preference,
+                    component_type: generationMetadata.component_type,
                     tokens_used: null, // Would be populated from API response
                     generation_time_ms: Date.now() - startTime,
                 };
             }
-            // Schedule server cleanup
+            // Server is already closed after selection, but ensure cleanup in case of any edge cases
+            // (This is a safety net - server should already be closed above)
             setTimeout(() => {
                 try {
                     stopLocalServer();
                 }
                 catch (shutdownError) {
-                    // Silent error handling for shutdown
-                    process.stderr.write(`[ERROR] Server shutdown error: ${shutdownError}\n`);
+                    // Silent error handling for shutdown - server may already be closed
                 }
-            }, 2000);
+            }, 1000);
             // Return the enhanced response
             return response;
         }
@@ -373,6 +607,17 @@ export class DesignselectionTool extends MCPTool {
             // Determine if this was a prompt workflow error
             const isPromptError = isPromptWorkflow(input) ||
                 (error instanceof Error && error.message.includes('MiniMax'));
+            // Get hasDesignFields for error handling
+            const hasDesignFieldsForError = 'design_name_1' in input && input.design_name_1 && 'design_html_1' in input && input.design_html_1;
+            // Use finalDesigns if available, otherwise fallback
+            const errorDesigns = finalDesigns || (hasDesignFieldsForError ? input : {
+                design_name_1: 'Error',
+                design_html_1: '',
+                design_name_2: 'Error',
+                design_html_2: '',
+                design_name_3: 'Error',
+                design_html_3: '',
+            });
             // Return an error response
             return {
                 success: false,
@@ -381,25 +626,31 @@ export class DesignselectionTool extends MCPTool {
                 url: null,
                 design_options: [
                     {
-                        name: isPromptWorkflow(input) ? 'Generated Design 1' : input.design_name_1,
+                        name: isPromptWorkflow(input) ? 'Generated Design 1' : errorDesigns.design_name_1,
                         description: "Option 1",
-                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (input.design_html_1 ? input.design_html_1.substring(0, 100) + (input.design_html_1.length > 100 ? '...' : '') : 'No HTML provided')
+                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (errorDesigns.design_html_1 ? errorDesigns.design_html_1.substring(0, 100) + (errorDesigns.design_html_1.length > 100 ? '...' : '') : 'No HTML provided')
                     },
                     {
-                        name: isPromptWorkflow(input) ? 'Generated Design 2' : input.design_name_2,
+                        name: isPromptWorkflow(input) ? 'Generated Design 2' : errorDesigns.design_name_2,
                         description: "Option 2",
-                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (input.design_html_2 ? input.design_html_2.substring(0, 100) + (input.design_html_2.length > 100 ? '...' : '') : 'No HTML provided')
+                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (errorDesigns.design_html_2 ? errorDesigns.design_html_2.substring(0, 100) + (errorDesigns.design_html_2.length > 100 ? '...' : '') : 'No HTML provided')
                     },
                     {
-                        name: isPromptWorkflow(input) ? 'Generated Design 3' : input.design_name_3,
+                        name: isPromptWorkflow(input) ? 'Generated Design 3' : errorDesigns.design_name_3,
                         description: "Option 3",
-                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (input.design_html_3 ? input.design_html_3.substring(0, 100) + (input.design_html_3.length > 100 ? '...' : '') : 'No HTML provided')
+                        preview: isPromptWorkflow(input) ? 'N/A - generation failed' : (errorDesigns.design_html_3 ? errorDesigns.design_html_3.substring(0, 100) + (errorDesigns.design_html_3.length > 100 ? '...' : '') : 'No HTML provided')
                     }
                 ],
                 selectedDesign: null,
                 selectedDesignHtml: null,
                 selectionTimestamp: null,
                 selectionDuration: Date.now() - startTime,
+                selection_context: {
+                    purpose: purposeMetadata,
+                    references,
+                    view_mode: viewMode,
+                    reference_error: referenceError
+                },
                 troubleshooting: [
                     "✅ Ensure all design names are provided and not empty",
                     "✅ Verify all HTML content is valid and not empty",
